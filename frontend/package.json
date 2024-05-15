@@ -10,19 +10,21 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.1.0",
+    "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.4",
+    "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.11.5",
     "@fontsource/roboto": "^5.0.13",
     "@mui/icons-material": "^5.15.17",
     "@mui/material": "^5.15.17",
+    "@mui/material-nextjs": "^5.15.11",
     "@prisma/client": "^5.14.0",
     "chess.js": "^1.0.0-beta.8",
     "next": "14.2.3",
     "next-auth": "^4.24.7",
     "nextjs-progressbar": "^0.0.16",
     "react": "^18",
-    "react-dom": "^18",
-    "socket.io": "^4.7.5"
+    "react-dom": "^18"
   },
   "devDependencies": {
     "postcss": "^8",
