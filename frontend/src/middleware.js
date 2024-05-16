@@ -18,7 +18,7 @@ export default withAuth(req => {
 		return NextResponse.next();
 	}
 
-	return NextResponse.redirect(new URL("/api/auth/signin", req.nextUrl.origin));
+	return NextResponse.redirect(new URL("/auth/signin", req.nextUrl.origin));
 });
 
 export const config = {
