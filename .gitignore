@@ -1,7 +1,7 @@
 
-/backend/CMakeFiles
-/backend/Crow
-backend/backend
-backend/cmake_install.cmake
-backend/CMakeCache.txt
-backend/Makefile
+/ws/CMakeFiles
+/ws/Crow
+ws/backend
+ws/cmake_install.cmake
+ws/CMakeCache.txt
+ws/Makefile
