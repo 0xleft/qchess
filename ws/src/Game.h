@@ -1,6 +1,6 @@
 #include <chess.hpp>
 #include <crow.h>
-#include <unordered_set>
+#include <vector>
 #include <chess.hpp>
 #include "Connection.hpp"
 #include "Utils.h"
@@ -18,11 +18,11 @@ enum class GameState {
 };
 
 class Game {
-    const float MAX_CREATION_TIME_SECONDS = 1.0f;
+    const float MAX_CREATION_TIME_SECONDS = 500.0f;
 
 private:
     chess::Board board = chess::Board();
-    std::unordered_set<ws::ChessConnection*> connections;
+    std::vector<ws::ChessConnection*> connections;
     GameState state = GameState::WAITING;
     std::string gameId;
     std::chrono::system_clock::time_point created = std::chrono::system_clock::now();
@@ -50,14 +50,14 @@ public:
     }
     Game(crow::websocket::connection& conn) {
         createId();
-        connections.insert(new ws::ChessConnection(&conn, ws::ConnectionRole::SPECTATOR));
+        connections.push_back(new ws::ChessConnection(&conn, ws::ConnectionRole::SPECTATOR));
         startSyncThread();
     }
     inline void addConnection(ws::ChessConnection* connection) {
-        connections.insert(connection);
+        connections.push_back(connection);
     }
     inline void removeConnection(ws::ChessConnection* connection) {
-        connections.erase(connection);
+        connections.erase(std::remove(connections.begin(), connections.end(), connection), connections.end());
     }
     void handleMove(crow::websocket::connection& connection, std::string move);
     void handleJoin(crow::websocket::connection& connection, std::string name);
@@ -108,7 +108,7 @@ public:
         return gameId;
     }
 
-    static inline ws::Game* getGame(std::string id, std::unordered_set<ws::Game*>& games) {
+    static inline ws::Game* getGame(std::string id, std::vector<ws::Game*>& games) {
         for (ws::Game* game : games) {
             if (game->getGameId() == id) {
                 return game;
@@ -117,7 +117,7 @@ public:
         return nullptr;
     }
 
-    static inline ws::Game* getGame(crow::websocket::connection& conn, std::unordered_set<ws::Game*>& games) {
+    static inline ws::Game* getGame(crow::websocket::connection& conn, std::vector<ws::Game*>& games) {
         for (ws::Game* game : games) {
             for (ws::ChessConnection* connection : game->connections) {
                 if (connection->getConnection() == &conn) {

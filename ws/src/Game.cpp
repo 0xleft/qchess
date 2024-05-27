@@ -55,7 +55,7 @@ void ws::Game::handleJoin(crow::websocket::connection &connection, std::string n
         return;
     }
 
-    connections.insert(new ws::ChessConnection(&connection, ws::ConnectionRole::SPECTATOR));
+    connections.push_back(new ws::ChessConnection(&connection, ws::ConnectionRole::SPECTATOR));
 }
 
 void ws::Game::handleTeam(crow::websocket::connection &connection, std::string team) {

@@ -1,5 +1,5 @@
 #include <crow.h>
-#include <unordered_set>
+#include <vector>
 #include <mutex>
 #include "Game.h"
 
@@ -7,8 +7,8 @@ int main() {
 	crow::Crow<> app;
 
 	std::mutex mtx;
-	std::unordered_set<crow::websocket::connection*> users;
-	std::unordered_set<ws::Game*> games;
+	std::vector<crow::websocket::connection*> users;
+	std::vector<ws::Game*> games;
 
 	// start thread to check for inactive games
 	std::thread([&]() {
@@ -30,11 +30,11 @@ int main() {
 	CROW_WEBSOCKET_ROUTE(app, "/ws")
 		.onopen([&](crow::websocket::connection& conn) {
 			std::lock_guard<std::mutex> _(mtx);
-			users.insert(&conn);
+			users.push_back(&conn);
 		})
 		.onclose([&](crow::websocket::connection& conn, const std::string& reason) {
 			std::lock_guard<std::mutex> _(mtx);
-			users.erase(&conn);
+			users.erase(std::remove(users.begin(), users.end(), &conn), users.end());
 			for (ws::Game* game : games) {
 				ws::ChessConnection* connection = game->getConnection(conn);
 				if (connection) {
@@ -57,7 +57,7 @@ int main() {
 			// handle create message
 			if (json.has("create")) {
 				ws::Game* game = new ws::Game(conn);
-				games.insert(game);
+				games.push_back(game);
 
 				conn.send_text("{\"gameId\": \"" + game->getGameId() + "\"}");
 				return;
