@@ -3,16 +3,29 @@
 #include <mutex>
 #include "Game.h"
 
-void onMessage(crow::websocket::connection& conn, const std::string& data, bool is_binary) {
-}
-
 int main() {
-
-	crow::SimpleApp app;
+	crow::Crow<> app;
 
 	std::mutex mtx;
 	std::unordered_set<crow::websocket::connection*> users;
 	std::unordered_set<ws::Game*> games;
+
+	// start thread to check for inactive games
+	std::thread([&]() {
+		while (true) {
+			std::this_thread::sleep_for(std::chrono::seconds(1));
+			std::lock_guard<std::mutex> _(mtx);
+			for (ws::Game* game : games) {
+				if (game->hasExpired()) {
+					delete game;
+				}
+			}
+
+			games.erase(std::remove_if(games.begin(), games.end(), [](ws::Game* game) {
+				return game->hasExpired();
+			}), games.end());
+		}
+	}).detach();
 
 	CROW_WEBSOCKET_ROUTE(app, "/ws")
 		.onopen([&](crow::websocket::connection& conn) {
@@ -22,18 +35,75 @@ int main() {
 		.onclose([&](crow::websocket::connection& conn, const std::string& reason) {
 			std::lock_guard<std::mutex> _(mtx);
 			users.erase(&conn);
+			for (ws::Game* game : games) {
+				ws::ChessConnection* connection = game->getConnection(conn);
+				if (connection) {
+					game->removeConnection(connection);
+					delete connection;
+				}
+			}
 		})
 	  	.onmessage([&](crow::websocket::connection& conn, const std::string& data, bool is_binary) {
 			std::lock_guard<std::mutex> _(mtx);
-			for (auto u : users) {
-				if (u != &conn) {
-					u->send_text(data);
+			if (is_binary) {
+				return;
+			}
+
+			crow::json::rvalue json = crow::json::load(data);
+			if (!json) {
+				return;
+			}
+
+			// handle create message
+			if (json.has("create")) {
+				ws::Game* game = new ws::Game(conn);
+				games.insert(game);
+
+				conn.send_text("{\"gameId\": \"" + game->getGameId() + "\"}");
+				return;
+			}
+
+			// handle join message
+			if (json.has("join")) {
+				ws::Game* game = ws::Game::getGame(json["join"].s(), games);
+
+				if (!game) {
+					conn.send_text("{\"error\": \"Game not found\"}");
+					return;
 				}
+
+				game->handleJoin(conn, json["join"].s());
+				return;
+			}
+
+
+			if (json.has("team")) {
+				ws::Game* game = ws::Game::getGame(conn, games);
+
+				if (!game) {
+					conn.send_text("{\"error\": \"Game not found\"}");
+					return;
+				}
+
+				game->handleTeam(conn, json["team"].s());
+				return;
+			}
+
+			// handle move message
+			if (json.has("move")) {
+				ws::Game* game = ws::Game::getGame(conn, games);
+
+				if (!game) {
+					conn.send_text("{\"error\": \"Game not found\"}");
+					return;
+				}
+
+				game->handleMove(conn, json["move"].s());
+				return;
 			}
 		});
 
-
-	app.port(8080)
+	app.port(2425)
 		.multithreaded()
 		.run();
 

@@ -14,18 +14,31 @@ export default function Chessboard({ id }) {
 	const [role, setRole] = useState(Role.WHITE); // todo default spectator
 	const [hoverSquare, setHoverSquare] = useState(null);
 
-	// const client = new WebSocket('ws://localhost:8080/ws');
-	// client.onopen = () => {
-	//     console.log('WebSocket connection established');
-	// };
-	// client.onmessage = (message) => {
-	//     const data = JSON.parse(message.data);
-	//     if (data.type === 'state') {
-	//     }
-	// };
 	const mousePosition = useMousePosition({ includeTouch: true });
 
 	useEffect(() => {
+		const client = new WebSocket('ws://localhost:2425/ws');
+		client.onopen = () => {
+			console.log('WebSocket connection established');
+		
+			if (!id) {
+				client.send(JSON.stringify({ 'create': '1' }));
+				return;
+			}
+
+			client.send(JSON.stringify({ 'join': id }));
+		};
+		client.onmessage = (message) => {
+			if (JSON.parse(message.data).sync) {
+				setBoardState(new Chess(JSON.parse(message.data).sync));
+			}
+
+			if (JSON.parse(message.data).role) {
+				setRole(JSON.parse(message.data).role);
+			}
+		};
+
+
 		const handleMouseUp = () => {
 			setHoverSquare(null);
 		};
@@ -74,7 +87,9 @@ export default function Chessboard({ id }) {
 								if (hoverSquare) {
 									const moves = boardState.moves({ square: hoverSquare });
 									if (moves.some(move => move.includes(SQUARES[8 * i + j]))) {
+										
 										boardState.move({ from: hoverSquare, to: SQUARES[8 * i + j] });
+
 										setBoardState(new Chess(boardState.fen()));
 									}
 									setHoverSquare(null);

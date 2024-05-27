@@ -5,3 +5,5 @@ ws/backend
 ws/cmake_install.cmake
 ws/CMakeCache.txt
 ws/Makefile
+ws/ws
+/.vscode
