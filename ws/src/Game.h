@@ -25,33 +25,24 @@ private:
     std::vector<ws::ChessConnection*> connections;
     GameState state = GameState::WAITING;
     std::string gameId;
+    std::string whiteId = "";
+    std::string blackId = "";
+    bool privateGame = false;
     std::chrono::system_clock::time_point created = std::chrono::system_clock::now();
-    std::thread syncThread;
 
     void createId() {
-        gameId = utils::sha256(std::to_string(std::chrono::system_clock::now().time_since_epoch().count()));
-    }
-
-    void startSyncThread() {
-        syncThread = std::thread([&]() {
-            while (state == GameState::IN_PROGRESS) {
-                std::this_thread::sleep_for(std::chrono::seconds(2));
-                sendSyncState();
-            }
-        });
-
-        syncThread.detach();
+        gameId = utils::sha256(std::to_string(rand()) + std::to_string(std::chrono::system_clock::now().time_since_epoch().count())).substr(0, 20);
+        whiteId = utils::sha256(std::to_string(rand())).substr(0, 10);
+        blackId = utils::sha256(std::to_string(rand())).substr(0, 10);
     }
 
 public:
     Game() {
         createId();
-        startSyncThread();
     }
     Game(crow::websocket::connection& conn) {
         createId();
         connections.push_back(new ws::ChessConnection(&conn, ws::ConnectionRole::SPECTATOR));
-        startSyncThread();
     }
     inline void addConnection(ws::ChessConnection* connection) {
         connections.push_back(connection);
@@ -59,21 +50,14 @@ public:
     inline void removeConnection(ws::ChessConnection* connection) {
         connections.erase(std::remove(connections.begin(), connections.end(), connection), connections.end());
     }
-    void handleMove(crow::websocket::connection& connection, std::string move);
-    void handleJoin(crow::websocket::connection& connection, std::string name);
-    void handleTeam(crow::websocket::connection& connection, std::string team);
+    void handleMove(crow::websocket::connection& connection, crow::json::rvalue json);
+    void handleJoin(crow::websocket::connection& connection, crow::json::rvalue json);
 
-    void sendSyncState() {
-        for (ws::ChessConnection* connection : connections) {
-            connection->send("{\"sync\": \"" + board.getFen() + "\"}");
-            if (connection->getRole() == ws::ConnectionRole::PLAYER) {
-                if (connection->getColor() == chess::Color::WHITE) {
-                    connection->send("{\"role\": \"white\"}");
-                } else {
-                    connection->send("{\"role\": \"black\"}");
-                }
-            }
-        }
+    void setPrivate(bool isPrivate) {
+        privateGame = isPrivate;
+    }
+    bool isPrivate() {
+        return privateGame;
     }
 
     bool hasExpired() {
@@ -104,9 +88,9 @@ public:
         return connections.size();
     }
 
-    std::string getGameId() {
-        return gameId;
-    }
+    std::string getGameId() { return gameId; }
+    std::string getWhiteId() { return whiteId; }
+    std::string getBlackId() { return blackId; }
 
     static inline ws::Game* getGame(std::string id, std::vector<ws::Game*>& games) {
         for (ws::Game* game : games) {
@@ -134,9 +118,7 @@ public:
         }
 
         state = GameState::FINISHED;
-        if (syncThread.joinable())
-            syncThread.join();
-        std::cout << "Game destroyed" << std::endl;
+        // std::cout << "Game destroyed" << std::endl;
     }
 };
 

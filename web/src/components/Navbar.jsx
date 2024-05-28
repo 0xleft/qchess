@@ -44,7 +44,7 @@ export default function Navbar() {
 
                     <Divider orientation='vertical' flexItem color='white' />
 
-                    <Link href='/play' className="pl-5 font-bold text-xl pr-5 hover:text-[#2196f3]">
+                    <Link href='/play' className="pl-5 font-thin text-xl pr-5 hover:text-[#2196f3]">
                         Play
                     </Link>
 

@@ -54,53 +54,53 @@ int main() {
 				return;
 			}
 
-			// handle create message
-			if (json.has("create")) {
-				ws::Game* game = new ws::Game(conn);
-				games.push_back(game);
-
-				conn.send_text("{\"gameId\": \"" + game->getGameId() + "\"}");
+			if (!json.has("type")) {
 				return;
 			}
 
-			// handle join message
-			if (json.has("join")) {
-				ws::Game* game = ws::Game::getGame(json["join"].s(), games);
+			if (json["type"].s() == "join") {
+				ws::Game* game = ws::Game::getGame(json["id"].s(), games);
 
 				if (!game) {
 					conn.send_text("{\"error\": \"Game not found\"}");
 					return;
 				}
 
-				game->handleJoin(conn, json["join"].s());
+				game->handleJoin(conn, json);
 				return;
 			}
 
-
-			if (json.has("team")) {
-				ws::Game* game = ws::Game::getGame(conn, games);
+			if (json["type"].s() == "move") {
+				ws::Game* game = ws::Game::getGame(json["id"].s(), games);
 
 				if (!game) {
 					conn.send_text("{\"error\": \"Game not found\"}");
 					return;
 				}
 
-				game->handleTeam(conn, json["team"].s());
+				game->handleMove(conn, json);
 				return;
 			}
+		});
 
-			// handle move message
-			if (json.has("move")) {
-				ws::Game* game = ws::Game::getGame(conn, games);
+	CROW_ROUTE(app, "/ws/create")
+		([&](const crow::request& req) {
+			std::lock_guard<std::mutex> _(mtx);
+			ws::Game* game = new ws::Game();
+			game->setPrivate(req.url_params.get("private") == "true");
+			games.push_back(game);
 
-				if (!game) {
-					conn.send_text("{\"error\": \"Game not found\"}");
-					return;
-				}
+			crow::json::wvalue json({
+				{"id", game->getGameId()},
+				{"whiteId", game->getWhiteId()},
+				{"blackId", game->getBlackId()}
+			});
 
-				game->handleMove(conn, json["move"].s());
-				return;
-			}
+			crow::response response;
+			response.set_header("Content-Type", "application/json");
+			response.write(json.dump());
+			response.set_header("Access-Control-Allow-Origin", "*"); // for development purposes only
+			return response;
 		});
 
 	app.port(2425)

@@ -1,6 +1,6 @@
 #include "Game.h"
 
-void ws::Game::handleMove(crow::websocket::connection &connection, std::string move) {
+void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::rvalue json) {
     ws::ChessConnection *conn = getConnection(connection);
     if (conn == nullptr) {
         return;
@@ -17,6 +17,8 @@ void ws::Game::handleMove(crow::websocket::connection &connection, std::string m
     if (board.sideToMove() != conn->getColor()) {
         return;
     }
+
+    std::string move = json["move"].s();
 
     chess::Movelist moves;
     chess::movegen::legalmoves(moves, board);
@@ -38,7 +40,7 @@ void ws::Game::handleMove(crow::websocket::connection &connection, std::string m
     board.makeMove(m);
 
     for (ws::ChessConnection *connection : connections) {
-        connection->send("{\"move\": \"" + move + "\"}");
+        connection->send("{\"board\": \"" + board.getFen() + "\"}");
     }
 
     if (board.isGameOver().first == chess::GameResultReason::NONE) {
@@ -49,33 +51,39 @@ void ws::Game::handleMove(crow::websocket::connection &connection, std::string m
     }
 }
 
-void ws::Game::handleJoin(crow::websocket::connection &connection, std::string name) {
+void ws::Game::handleJoin(crow::websocket::connection &connection, crow::json::rvalue json) {
     ws::ChessConnection *conn = getConnection(connection);
     if (conn != nullptr) {
         return;
     }
 
-    connections.push_back(new ws::ChessConnection(&connection, ws::ConnectionRole::SPECTATOR));
-}
+    std::string joinId = json["joinId"].s();
+    
+    ws::ChessConnection *ws_connection = new ws::ChessConnection(&connection, ws::ConnectionRole::SPECTATOR);
 
-void ws::Game::handleTeam(crow::websocket::connection &connection, std::string team) {
-    ws::ChessConnection *conn = getConnection(connection);
-    if (conn == nullptr) {
-        return;
+    bool spectator = false;    
+
+    if (joinId == whiteId) {
+        ws_connection->setColor(chess::Color::WHITE);
+        ws_connection->setRole(ws::ConnectionRole::PLAYER);
+        connections.push_back(ws_connection);
+    } else if (joinId == blackId) {
+        ws_connection->setColor(chess::Color::BLACK);
+        ws_connection->setRole(ws::ConnectionRole::PLAYER);
+        connections.push_back(ws_connection);
+    } else {
+        spectator = true;
+        connections.push_back(ws_connection);
     }
 
-    if (getNumPlayers() == 2) {
-        connection.send_text("{\"error\": \"Game is full\"}");
-        return;
-    }
+    ws_connection->send("{\"gameId\": \"" + gameId + "\", \"color\": \"" + (ws_connection->getColor() == chess::Color::WHITE ? "white" : "black") + "\", \"role\": \"" + (ws_connection->getRole() == ws::ConnectionRole::PLAYER ? "player" : "spectator") + "\"}");
+    ws_connection->send("{\"board\": \"" + board.getFen() + "\"}");
 
-    conn->setRole(ws::ConnectionRole::PLAYER);
-    conn->setColor(team == "white" ? chess::Color::WHITE : chess::Color::BLACK);
-
-    if (getNumPlayers() == 2) {
+    if (getNumPlayers() == 2 && !spectator) {
         state = ws::GameState::IN_PROGRESS;
+
         for (ws::ChessConnection *connection : connections) {
-            connection->send("{\"start\": true}");
+            ws_connection->send("{\"playing\": true}");
         }
     }
 }
