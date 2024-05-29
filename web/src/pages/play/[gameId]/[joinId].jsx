@@ -21,7 +21,7 @@ export default function PlayID() {
         <>
             <h1>Play {gameId} {joinId}</h1>
 
-            <Chessboard />
+            <Chessboard id={gameId} joinId={joinId} />
         </>
     );
 }

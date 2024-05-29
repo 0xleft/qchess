@@ -29,6 +29,7 @@ private:
     std::string blackId = "";
     bool privateGame = false;
     std::chrono::system_clock::time_point created = std::chrono::system_clock::now();
+    std::chrone::system_clock::time_point lastMove = std::chrono::system_clock::now();
 
     void createId() {
         gameId = utils::sha256(std::to_string(rand()) + std::to_string(std::chrono::system_clock::now().time_since_epoch().count())).substr(0, 20);
@@ -62,7 +63,7 @@ public:
 
     bool hasExpired() {
         std::chrono::duration<float> elapsed = std::chrono::system_clock::now() - created;
-        return elapsed.count() > MAX_CREATION_TIME_SECONDS && state != GameState::IN_PROGRESS;
+        return (elapsed.count() > MAX_CREATION_TIME_SECONDS && state != GameState::IN_PROGRESS) || state == GameState::IN_PROGRESS && getNumPlayers() < 2 && std::chrono::duration<float>(std::chrono::system_clock::now() - lastMove).count() > 10.0f;
     }
 
     ws::ChessConnection* getConnection(crow::websocket::connection& conn) {

@@ -3,18 +3,22 @@
 void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::rvalue json) {
     ws::ChessConnection *conn = getConnection(connection);
     if (conn == nullptr) {
+        connection.send_text("{\"error\": \"Not in game\"}");
         return;
     }
 
     if (conn->getRole() == ws::ConnectionRole::SPECTATOR) {
+        conn->send("{\"error\": \"Spectators cannot make moves\"}");
         return;
     }
 
     if (state != ws::GameState::IN_PROGRESS) {
+        conn->send("{\"error\": \"Game not in progress\"}");
         return;
     }
 
     if (board.sideToMove() != conn->getColor()) {
+        conn->send("{\"error\": \"Not your turn\"}");
         return;
     }
 
@@ -43,7 +47,7 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
         connection->send("{\"board\": \"" + board.getFen() + "\"}");
     }
 
-    if (board.isGameOver().first == chess::GameResultReason::NONE) {
+    if (board.isGameOver().first != chess::GameResultReason::NONE) {
         state = ws::GameState::FINISHED;
         for (ws::ChessConnection *connection : connections) {
             connection->send("{\"gameOver\": true}");

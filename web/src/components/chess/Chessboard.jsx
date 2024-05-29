@@ -4,37 +4,44 @@ import Piece from "./Piece";
 import useMousePosition from "../hooks/useMousePosition";
 
 const Role = {
-	WHITE: 'w',
-	BLACK: 'b',
-	SPECTATOR: 's'
+	SPECTATOR: 'spectator',
+	PLAYER: 'player'
 };
 
-// returns gameid in id and whiteId and blackId
-export async function createGame() {
-	const response = await fetch('http://localhost:2425/ws/create', {
-		method: 'POST'
-	});
-	const data = await response.json();
-	return data;
-}
+const Color = {
+	WHITE: 'w',
+	BLACK: 'b'
+};
 
 export default function Chessboard({ id, joinId }) {
-	const [boardState, setBoardState] = useState(new Chess());
-	const [role, setRole] = useState(Role.WHITE);
+	const [boardState, setBoardState] = useState(null);
+	const [role, setRole] = useState(Role.PLAYER);
+	const [color, setColor] = useState(Color.WHITE);
 	const [hoverSquare, setHoverSquare] = useState(null);
 	const [playing, setPlaying] = useState(false);
 	const [flipped, setFlipped] = useState(true);
+	const [client, setClient] = useState(null);
 
 	const mousePosition = useMousePosition({ includeTouch: true });
 
+	function sendMove(move) {
+		if (!client) return;
+		client.send(JSON.stringify({
+			'id': id,
+			'type': 'move',
+			'move': move
+		}).toString());
+	};
+
 	useEffect(() => {
 		const client = new WebSocket('ws://localhost:2425/ws');
+		setClient(client);
 		client.onopen = () => {
 			client.send(JSON.stringify({
 				'id': id,
 				'joinId': joinId,
 				'type': 'join'
-			}));
+			}).toString());
 		};
 		client.onmessage = (message) => {
 			if (JSON.parse(message.data).error) {
@@ -49,7 +56,8 @@ export default function Chessboard({ id, joinId }) {
 
 			if (JSON.parse(message.data).role) {
 				setRole(JSON.parse(message.data).role);
-				setFlipped(JSON.parse(message.data).role === Role.BLACK);
+				setColor(JSON.parse(message.data).color === 'white' ? Color.WHITE : Color.BLACK);
+				setFlipped(JSON.parse(message.data).color === 'black' ? true : false);
 				return;
 			}
 
@@ -58,7 +66,6 @@ export default function Chessboard({ id, joinId }) {
 				return;
 			}
 		};
-
 
 		const handleMouseUp = () => {
 			setHoverSquare(null);
@@ -98,19 +105,20 @@ export default function Chessboard({ id, joinId }) {
 							<div key={j} className={`square ${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'} w-12 h-12`}
 								onMouseDown={() => {
 									if (role === Role.SPECTATOR) return;
-									if (boardState.get(SQUARES[8 * (8 - i) + j])?.color !== role) return;
+									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])?.color !== color) return;
 
-									if (boardState.get(SQUARES[8 * (8 - i) + j])) {
-										setHoverSquare(SQUARES[8 * (8 - i) + j]);
+									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])) {
+										setHoverSquare(SQUARES[8 * (7 - i) + (7 - j)]);
 									}
 								}}
 
 								onMouseUp={() => {
 									if (hoverSquare) {
 										const moves = boardState.moves({ square: hoverSquare });
-										if (moves.some(move => move.includes(SQUARES[8 * (8 - i) + j]))) {
+										if (moves.some(move => move.includes(SQUARES[8 * (7 - i) + (7 - j)]))) {
 											
-											boardState.move({ from: hoverSquare, to: SQUARES[8 * (8 - i) + j] });
+											boardState.move({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+											sendMove(`${hoverSquare}${SQUARES[8 * (7 - i) + (7 - j)]}`);
 
 											setBoardState(new Chess(boardState.fen()));
 										}
@@ -118,10 +126,11 @@ export default function Chessboard({ id, joinId }) {
 									}
 								}}
 							>
-								{boardState.get(SQUARES[8 * (8 - i) + j]) && hoverSquare !== SQUARES[8 * (8 - i) + j] ? (
+								
+								{boardState && boardState.get(SQUARES[8 * (7 - i) + (7 - j)]) && hoverSquare !== SQUARES[8 * (7 - i) + (7 - j)] ? (
 									<Piece
-										type={boardState.get(SQUARES[8 * (8 - i) + j]).type}
-										color={boardState.get(SQUARES[8 * (8 - i) + j]).color}
+										type={boardState.get(SQUARES[8 * (7 - i) + (7 - j)]).type}
+										color={boardState.get(SQUARES[8 * (7 - i) + (7 - j)]).color}
 										width={50}
 										height={50}
 										props={{ style: { pointerEvents: 'none', userSelect: 'none' } }}
@@ -138,7 +147,7 @@ export default function Chessboard({ id, joinId }) {
 							<div key={j} className={`square ${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'} w-12 h-12`}
 								onMouseDown={() => {
 									if (role === Role.SPECTATOR) return;
-									if (boardState.get(SQUARES[8 * i + j])?.color !== role) return;
+									if (boardState.get(SQUARES[8 * i + j])?.color !== color) return;
 
 									if (boardState.get(SQUARES[8 * i + j])) {
 										setHoverSquare(SQUARES[8 * i + j]);
@@ -151,6 +160,7 @@ export default function Chessboard({ id, joinId }) {
 										if (moves.some(move => move.includes(SQUARES[8 * i + j]))) {
 											
 											boardState.move({ from: hoverSquare, to: SQUARES[8 * i + j] });
+											sendMove(`${hoverSquare}${SQUARES[8 * i + j]}`);
 
 											setBoardState(new Chess(boardState.fen()));
 										}
@@ -158,7 +168,7 @@ export default function Chessboard({ id, joinId }) {
 									}
 								}}
 							>
-								{boardState.get(SQUARES[8 * i + j]) && hoverSquare !== SQUARES[8 * i + j] ? (
+								{boardState && boardState.get(SQUARES[8 * i + j]) && hoverSquare !== SQUARES[8 * i + j] ? (
 									<Piece
 										type={boardState.get(SQUARES[8 * i + j]).type}
 										color={boardState.get(SQUARES[8 * i + j]).color}
