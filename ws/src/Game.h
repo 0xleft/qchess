@@ -28,13 +28,14 @@ private:
     std::string whiteId = "";
     std::string blackId = "";
     bool privateGame = false;
+    std::vector<std::string> moves;
     std::chrono::system_clock::time_point created = std::chrono::system_clock::now();
     std::chrono::system_clock::time_point lastMove = std::chrono::system_clock::now();
 
     void createId() {
-        gameId = utils::sha256(std::to_string(rand()) + std::to_string(std::chrono::system_clock::now().time_since_epoch().count())).substr(0, 20);
-        whiteId = utils::sha256(std::to_string(rand())).substr(0, 10);
-        blackId = utils::sha256(std::to_string(rand())).substr(0, 10);
+        gameId = utils::sha256(std::to_string(rand()) + std::to_string(std::chrono::system_clock::now().time_since_epoch().count()));
+        whiteId = utils::sha256(std::to_string(rand())).substr(0, 20);
+        blackId = utils::sha256(std::to_string(rand())).substr(0, 20);
     }
 
 public:
@@ -63,7 +64,8 @@ public:
 
     bool hasExpired() {
         std::chrono::duration<float> elapsed = std::chrono::system_clock::now() - created;
-        return (elapsed.count() > MAX_CREATION_TIME_SECONDS && state != GameState::IN_PROGRESS) || state == GameState::IN_PROGRESS && getNumPlayers() < 2 && std::chrono::duration<float>(std::chrono::system_clock::now() - lastMove).count() > 10.0f;
+        std::chrono::duration<float> lastMoveElapsed = std::chrono::system_clock::now() - lastMove;
+        return (elapsed.count() > MAX_CREATION_TIME_SECONDS && state != GameState::IN_PROGRESS) || (state == GameState::IN_PROGRESS && getNumPlayers() < 2 && lastMoveElapsed.count() > 60.0f);
     }
 
     ws::ChessConnection* getConnection(crow::websocket::connection& conn) {
@@ -115,10 +117,12 @@ public:
 
     ~Game() {
         for (ws::ChessConnection* connection : connections) {
+            connection->send("{\"playing\": false}");
             delete connection;
         }
 
         state = GameState::FINISHED;
+        
         // todo save the board and players to a db
     }
 };

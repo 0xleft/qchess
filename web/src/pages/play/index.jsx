@@ -14,7 +14,7 @@ export default function PlayIndex() {
     return (
         <>
             <Button onClick={async () => {
-                fetch('http://localhost:2425/ws/create?random=true').then(response => response.json()).then(data => {
+                fetch('http://localhost:2425/ws/create').then(response => response.json()).then(data => {
                     setGameId(data.id);
                     setWhiteId(data.whiteId);
                     setBlackId(data.blackId);
@@ -22,18 +22,22 @@ export default function PlayIndex() {
             }}>
                 Create Game
             </Button>
+            
+            {gameId && whiteId && blackId && (
+                <>
+                    <Link href={`/play/${gameId}/${whiteId}`} target="_blank">
+                        <Button>
+                            Play as White
+                        </Button>
+                    </Link>
 
-            <Link href={`/play/${gameId}/${whiteId}`}>
-                <Button>
-                    Play as White
-                </Button>
-            </Link>
-
-            <Link href={`/play/${gameId}/${blackId}`}>
-                <Button>
-                    Play as Black
-                </Button>
-            </Link>
+                    <Link href={`/play/${gameId}/${blackId}`} target="_blank">
+                        <Button>
+                            Play as Black
+                        </Button>
+                    </Link>
+                </>
+            )}
         </>
     )
 }

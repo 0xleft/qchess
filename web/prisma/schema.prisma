@@ -76,3 +76,12 @@ model Authenticator {
  
   @@id([userId, credentialID])
 }
+
+model ChessGame {
+  moves String[]
+  gameId String @id @unique
+  whitePlayerId String
+  blackPlayerId String
+
+  createdAt DateTime @default(now())
+}

@@ -42,6 +42,7 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
 
     chess::Move m = chess::uci::uciToMove(board, move);
     board.makeMove(m);
+    moves.push_back(move);
 
     for (ws::ChessConnection *connection : connections) {
         connection->send("{\"board\": \"" + board.getFen() + "\"}");
@@ -63,31 +64,31 @@ void ws::Game::handleJoin(crow::websocket::connection &connection, crow::json::r
 
     std::string joinId = json["joinId"].s();
     
-    ws::ChessConnection *ws_connection = new ws::ChessConnection(&connection, ws::ConnectionRole::SPECTATOR);
+    ws::ChessConnection *newConnection = new ws::ChessConnection(&connection, ws::ConnectionRole::SPECTATOR);
 
-    bool spectator = false;    
+    bool spectator = false;
 
     if (joinId == whiteId) {
-        ws_connection->setColor(chess::Color::WHITE);
-        ws_connection->setRole(ws::ConnectionRole::PLAYER);
-        connections.push_back(ws_connection);
+        newConnection->setColor(chess::Color::WHITE);
+        newConnection->setRole(ws::ConnectionRole::PLAYER);
+        connections.push_back(newConnection);
     } else if (joinId == blackId) {
-        ws_connection->setColor(chess::Color::BLACK);
-        ws_connection->setRole(ws::ConnectionRole::PLAYER);
-        connections.push_back(ws_connection);
+        newConnection->setColor(chess::Color::BLACK);
+        newConnection->setRole(ws::ConnectionRole::PLAYER);
+        connections.push_back(newConnection);
     } else {
         spectator = true;
-        connections.push_back(ws_connection);
+        connections.push_back(newConnection);
     }
 
-    ws_connection->send("{\"gameId\": \"" + gameId + "\", \"color\": \"" + (ws_connection->getColor() == chess::Color::BLACK ? "black" : "white") + "\", \"role\": \"" + (ws_connection->getRole() == ws::ConnectionRole::PLAYER ? "player" : "spectator") + "\"}");
-    ws_connection->send("{\"board\": \"" + board.getFen() + "\"}");
+    newConnection->send("{\"gameId\": \"" + gameId + "\", \"color\": \"" + (newConnection->getColor() == chess::Color::BLACK ? "black" : "white") + "\", \"role\": \"" + (newConnection->getRole() == ws::ConnectionRole::PLAYER ? "player" : "spectator") + "\"}");
+    newConnection->send("{\"board\": \"" + board.getFen() + "\"}");
 
     if (getNumPlayers() == 2 && !spectator) {
         state = ws::GameState::IN_PROGRESS;
 
-        for (ws::ChessConnection *connection : connections) {
-            ws_connection->send("{\"playing\": true}");
+        for (ws::ChessConnection *w_connection : connections) {
+            w_connection->send("{\"playing\": true}");
         }
     }
 }

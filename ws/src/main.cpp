@@ -114,6 +114,20 @@ int main() {
 			return response;
 		});
 
+	// for debugging only
+	CROW_ROUTE(app, "/ws/list")
+		([&]() {
+			std::lock_guard<std::mutex> _(mtx);
+
+			// returns length of games
+			crow::json::wvalue json;
+			json["games"] = games.size();
+
+			crow::response response;
+			response.write(json.dump());
+			return response;
+		});
+
 	app.port(2425)
 		.multithreaded()
 		.run();

@@ -62,7 +62,7 @@ export default function Chessboard({ id, joinId }) {
 			}
 
 			if (JSON.parse(message.data).playing) {
-				setPlaying(JSON.parse(message.data).playing);
+				setPlaying(Boolean(JSON.parse(message.data).playing));
 				return;
 			}
 		};
@@ -75,7 +75,6 @@ export default function Chessboard({ id, joinId }) {
 			window.addEventListener('mouseup', handleMouseUp);
 		}
 	
-		// Clean up the event listener when the component is unmounted
 		return () => {
 			if (typeof window !== 'undefined') {
 				window.removeEventListener('mouseup', handleMouseUp);
@@ -104,6 +103,7 @@ export default function Chessboard({ id, joinId }) {
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`square ${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'} w-12 h-12`}
 								onMouseDown={() => {
+									if (!playing) return;
 									if (!boardState) return;
 									if (role === Role.SPECTATOR) return;
 									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])?.color !== color) return;
@@ -147,6 +147,7 @@ export default function Chessboard({ id, joinId }) {
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`square ${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'} w-12 h-12`}
 								onMouseDown={() => {
+									if (!playing) return;
 									if (!boardState) return;
 									if (role === Role.SPECTATOR) return;
 									if (boardState.get(SQUARES[8 * i + j])?.color !== color) return;
