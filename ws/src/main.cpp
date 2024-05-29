@@ -91,10 +91,21 @@ int main() {
 			games.push_back(game);
 
 			crow::json::wvalue json({
-				{"id", game->getGameId()},
-				{"whiteId", game->getWhiteId()},
-				{"blackId", game->getBlackId()}
+				{"id", game->getGameId()}
 			});
+
+			if (req.url_params.get("random")) {
+				if (rand() % 2 == 0) {
+					json["whiteId"] = game->getWhiteId();
+					json["blackId"] = game->getBlackId();
+				} else {
+					json["whiteId"] = game->getBlackId();
+					json["blackId"] = game->getWhiteId();
+				}
+			} else {
+				json["whiteId"] = game->getWhiteId();
+				json["blackId"] = game->getBlackId();
+			}
 
 			crow::response response;
 			response.set_header("Content-Type", "application/json");

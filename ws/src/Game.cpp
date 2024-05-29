@@ -80,7 +80,7 @@ void ws::Game::handleJoin(crow::websocket::connection &connection, crow::json::r
         connections.push_back(ws_connection);
     }
 
-    ws_connection->send("{\"gameId\": \"" + gameId + "\", \"color\": \"" + (ws_connection->getColor() == chess::Color::WHITE ? "white" : "black") + "\", \"role\": \"" + (ws_connection->getRole() == ws::ConnectionRole::PLAYER ? "player" : "spectator") + "\"}");
+    ws_connection->send("{\"gameId\": \"" + gameId + "\", \"color\": \"" + (ws_connection->getColor() == chess::Color::BLACK ? "black" : "white") + "\", \"role\": \"" + (ws_connection->getRole() == ws::ConnectionRole::PLAYER ? "player" : "spectator") + "\"}");
     ws_connection->send("{\"board\": \"" + board.getFen() + "\"}");
 
     if (getNumPlayers() == 2 && !spectator) {

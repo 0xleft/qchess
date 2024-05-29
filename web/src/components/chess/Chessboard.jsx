@@ -19,7 +19,7 @@ export default function Chessboard({ id, joinId }) {
 	const [color, setColor] = useState(Color.WHITE);
 	const [hoverSquare, setHoverSquare] = useState(null);
 	const [playing, setPlaying] = useState(false);
-	const [flipped, setFlipped] = useState(true);
+	const [flipped, setFlipped] = useState(false);
 	const [client, setClient] = useState(null);
 
 	const mousePosition = useMousePosition({ includeTouch: true });
@@ -104,6 +104,7 @@ export default function Chessboard({ id, joinId }) {
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`square ${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'} w-12 h-12`}
 								onMouseDown={() => {
+									if (!boardState) return;
 									if (role === Role.SPECTATOR) return;
 									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])?.color !== color) return;
 
@@ -146,6 +147,7 @@ export default function Chessboard({ id, joinId }) {
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`square ${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'} w-12 h-12`}
 								onMouseDown={() => {
+									if (!boardState) return;
 									if (role === Role.SPECTATOR) return;
 									if (boardState.get(SQUARES[8 * i + j])?.color !== color) return;
 

@@ -14,7 +14,7 @@ export default function PlayIndex() {
     return (
         <>
             <Button onClick={async () => {
-                fetch('http://localhost:2425/ws/create').then(response => response.json()).then(data => {
+                fetch('http://localhost:2425/ws/create?random=true').then(response => response.json()).then(data => {
                     setGameId(data.id);
                     setWhiteId(data.whiteId);
                     setBlackId(data.blackId);

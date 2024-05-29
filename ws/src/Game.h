@@ -29,7 +29,7 @@ private:
     std::string blackId = "";
     bool privateGame = false;
     std::chrono::system_clock::time_point created = std::chrono::system_clock::now();
-    std::chrone::system_clock::time_point lastMove = std::chrono::system_clock::now();
+    std::chrono::system_clock::time_point lastMove = std::chrono::system_clock::now();
 
     void createId() {
         gameId = utils::sha256(std::to_string(rand()) + std::to_string(std::chrono::system_clock::now().time_since_epoch().count())).substr(0, 20);
@@ -119,7 +119,7 @@ public:
         }
 
         state = GameState::FINISHED;
-        // std::cout << "Game destroyed" << std::endl;
+        // todo save the board and players to a db
     }
 };
 
