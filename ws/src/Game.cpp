@@ -22,13 +22,18 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
         return;
     }
 
+    if (!json.has("move")) {
+        connection.send_text("{\"error\": \"Invalid move\"}");
+        return;
+    }
+
     std::string move = json["move"].s();
 
-    chess::Movelist moves;
-    chess::movegen::legalmoves(moves, board);
+    chess::Movelist movelist;
+    chess::movegen::legalmoves(movelist, board);
 
     bool found = false;
-    for (const chess::Move &m : moves) {
+    for (const chess::Move &m : movelist) {
         if (chess::uci::moveToUci(m) == move) {
             found = true;
             break;
@@ -59,6 +64,11 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
 void ws::Game::handleJoin(crow::websocket::connection &connection, crow::json::rvalue json) {
     ws::ChessConnection *conn = getConnection(connection);
     if (conn != nullptr) {
+        return;
+    }
+
+    if (!json.has("joinId")) {
+        connection.send_text("{\"error\": \"Invalid join request\"}");
         return;
     }
 

@@ -39,7 +39,7 @@ export default function Chessboard({ id, joinId }) {
 		client.onopen = () => {
 			client.send(JSON.stringify({
 				'id': id,
-				'joinId': joinId,
+				'joinId': joinId || 'none',
 				'type': 'join'
 			}).toString());
 		};

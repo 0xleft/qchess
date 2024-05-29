@@ -36,6 +36,8 @@ export default function PlayIndex() {
                             Play as Black
                         </Button>
                     </Link>
+
+                    <Chessboard id={gameId} />
                 </>
             )}
         </>
