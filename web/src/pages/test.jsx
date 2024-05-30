@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 
 export default function Test() {
 
-    const int_sqrt = useRef(null);
+    const test = useRef(null);
 
     useEffect(() => {
         setTimeout(() => {
@@ -12,11 +12,15 @@ export default function Test() {
                     .then(wasm => {
                         console.log("got WASM!");
                         WebAssembly.current = wasm;
-                        int_sqrt.current = WebAssembly.current.cwrap("int_sqrt", "number", ["number"]);
+                        // returns a string
+                        test.current = WebAssembly.current.cwrap("test", "number", []);
+
+                        console.log(test.current());
                     });
+
             }
         }, 1000);
-    }, []);    
+    }, []);
 
     return (
 		<>
