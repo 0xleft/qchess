@@ -17,4 +17,13 @@ std::string sha256(const std::string str) {
     return ss.str();
 }
 
+bool isAlphanumeric(const std::string& str) {
+    for (char c : str) {
+        if (!isalnum(c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 } // namespace utils

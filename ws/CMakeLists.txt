@@ -8,11 +8,14 @@ add_executable(ws
     src/Utils.cpp
 )
 
+
 set(OPENSSL_USE_STATIC_LIBS TRUE)
 
+find_package(libpqxx REQUIRED)
 find_package(OpenSSL REQUIRED)
 
 target_include_directories(ws PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(ws PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 find_package(Crow)
 target_link_libraries(ws PUBLIC Crow::Crow OpenSSL::Crypto)
+target_link_libraries(ws PUBLIC libpqxx pq)

@@ -4,6 +4,7 @@
 #include <chess.hpp>
 #include "Connection.hpp"
 #include "Utils.h"
+#include "Database.hpp"
 
 #ifndef GAME_H
 #define GAME_H
@@ -60,6 +61,17 @@ public:
     }
     bool isPrivate() {
         return privateGame;
+    }
+    std::vector<std::string> getMoves() {
+        return moves;
+    }
+
+    std::string getMovesString() {
+        std::string result = "";
+        for (std::string move : moves) {
+            result += move + ",";
+        }
+        return result;
     }
 
     bool hasExpired() {
@@ -123,6 +135,8 @@ public:
 
         state = GameState::FINISHED;
         // todo save the board and players to a db
+
+
     }
 };
 
