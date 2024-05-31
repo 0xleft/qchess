@@ -5,14 +5,6 @@ ws::Database::Database() {
 }
 
 void ws::Database::init() {
-    // dbConnection->execute("DROP TABLE IF EXISTS games");
-    dbConnection->execute("CREATE TABLE IF NOT EXISTS games ("
-        "id SERIAL PRIMARY KEY,"
-        "game_id TEXT NOT NULL,"
-        "moves TEXT NOT NULL,"
-        "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-    ")");
-
     dbConnection->prepare("insert_game", "INSERT INTO games (game_id, moves) VALUES ($1, $2)");
     dbConnection->prepare("select_game", "SELECT * FROM games WHERE game_id = $1");
 }
