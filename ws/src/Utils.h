@@ -8,9 +8,8 @@
 namespace utils {
 
 std::string sha256(const std::string str);
+bool isAlphanumeric(const std::string& str);
 
 } // namespace utils
-
-bool isAlphanumeric(const std::string& str);
 
 #endif

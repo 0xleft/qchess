@@ -9,3 +9,4 @@ ws/ws
 /.vscode
 web/public/engine.js
 web/public/engine.wasm
+/ws/_deps

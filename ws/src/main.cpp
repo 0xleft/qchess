@@ -2,9 +2,11 @@
 #include <vector>
 #include <mutex>
 #include "Game.h"
-#include "Database.hpp"
+#include "Database.h"
 
 int main() {
+	std::cout << "Starting server... :)" << std::endl;
+
 	crow::Crow<> app;
 
 	std::mutex mtx;

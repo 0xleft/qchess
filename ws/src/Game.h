@@ -4,7 +4,7 @@
 #include <chess.hpp>
 #include "Connection.hpp"
 #include "Utils.h"
-#include "Database.hpp"
+#include "Database.h"
 
 #ifndef GAME_H
 #define GAME_H
