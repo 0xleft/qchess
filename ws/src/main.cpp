@@ -21,6 +21,10 @@ int main() {
 			std::lock_guard<std::mutex> _(mtx);
 			for (ws::Game* game : games) {
 				if (game->hasExpired()) {
+					if (game->getMoves().size() > 0) {
+						database.saveGame(game);
+					}
+
 					delete game;
 				}
 			}
@@ -130,10 +134,9 @@ int main() {
 			}
 
 			crow::json::wvalue json({
-				{"id", game->getGameId()},
-				{"whiteId", game->getWhiteId()},
-				{"blackId", game->getBlackId()},
-				{"moves", game->getMovesString()}
+				// {"id", game->getGameId()},
+				{"moves", game->getMovesString()},
+				{"created", game->getCreated()}
 			});
 
 			delete game;

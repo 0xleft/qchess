@@ -39,4 +39,19 @@ std::vector<std::string> split(std::string str, std::string delimiter) {
     return result;
 }
 
+std::string timeToString(std::chrono::system_clock::time_point time) {
+    std::time_t t = std::chrono::system_clock::to_time_t(time);
+    std::tm tm = *std::localtime(&t);
+    std::stringstream ss;
+    ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return ss.str();
+}
+
+std::chrono::system_clock::time_point stringToTime(std::string time) {
+    std::tm tm = {};
+    std::istringstream ss(time);
+    ss >> std::get_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return std::chrono::system_clock::from_time_t(std::mktime(&tm));
+}
+
 } // namespace utils

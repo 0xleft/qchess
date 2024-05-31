@@ -5,10 +5,12 @@ ws::Database::Database() {
 }
 
 void ws::Database::init() {
+    // dbConnection->execute("DROP TABLE IF EXISTS games");
     dbConnection->execute("CREATE TABLE IF NOT EXISTS games ("
         "id SERIAL PRIMARY KEY,"
         "game_id TEXT NOT NULL,"
-        "moves TEXT NOT NULL"
+        "moves TEXT NOT NULL,"
+        "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
     ")");
 
     dbConnection->prepare("insert_game", "INSERT INTO games (game_id, moves) VALUES ($1, $2)");
@@ -39,6 +41,7 @@ ws::Game* ws::Database::loadGame(std::string gameId) {
     ws::Game* game = new ws::Game();
     game->setGameId(result[0]["game_id"].as<std::string>());
     game->setMovesFromString(result[0]["moves"].as<std::string>());
+    game->setCreated(result[0]["created_at"].as<std::string>());
 
     return game;
 }

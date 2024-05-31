@@ -34,7 +34,7 @@ public:
 
 
 class Game {
-    const float MAX_CREATION_TIME_SECONDS = 1.0f;
+    const float MAX_CREATION_TIME_SECONDS = 20.0f;
 
 private:
     chess::Board board = chess::Board();
@@ -97,7 +97,8 @@ public:
         for (std::string move : moves) {
             result += move + ",";
         }
-        return result;
+
+        return result.substr(0, result.size() - 1);
     }
 
     bool hasExpired() {
@@ -105,6 +106,15 @@ public:
         std::chrono::duration<float> lastMoveElapsed = std::chrono::system_clock::now() - lastMove;
         return (elapsed.count() > MAX_CREATION_TIME_SECONDS && state != GameState::IN_PROGRESS) || (state == GameState::IN_PROGRESS && getNumPlayers() < 2 && lastMoveElapsed.count() > 60.0f);
     }
+
+    void setCreated(std::string created) {
+        this->created = utils::stringToTime(created);
+    }
+    
+    std::string getCreated() {
+        return utils::timeToString(created);
+    }
+
 
     ws::ChessConnection* getConnection(crow::websocket::connection& conn) {
         for (ws::ChessConnection* connection : connections) {
