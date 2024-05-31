@@ -9,7 +9,6 @@ int main() {
 	crow::Crow<> app;
 
 	std::mutex mtx;
-	std::vector<crow::websocket::connection*> users;
 	std::vector<ws::Game*> games;
 
 	ws::Database database;
@@ -21,6 +20,8 @@ int main() {
 			std::lock_guard<std::mutex> _(mtx);
 			for (ws::Game* game : games) {
 				if (game->hasExpired()) {
+					// todo
+					std::cout << "Game " << game->getGameId() << " has expired" << std::endl;
 					if (game->getMoves().size() > 0) {
 						database.saveGame(game);
 					}
@@ -38,11 +39,9 @@ int main() {
 	CROW_WEBSOCKET_ROUTE(app, "/ws")
 		.onopen([&](crow::websocket::connection& conn) {
 			std::lock_guard<std::mutex> _(mtx);
-			users.push_back(&conn);
 		})
 		.onclose([&](crow::websocket::connection& conn, const std::string& reason) {
 			std::lock_guard<std::mutex> _(mtx);
-			users.erase(std::remove(users.begin(), users.end(), &conn), users.end());
 			for (ws::Game* game : games) {
 				ws::ChessConnection* connection = game->getConnection(conn);
 				if (connection) {

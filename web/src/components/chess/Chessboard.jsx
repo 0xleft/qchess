@@ -13,6 +13,20 @@ const Color = {
 	BLACK: 'b'
 };
 
+function promotionMenu({ onSelect, color, position, move }) {
+	return (
+		<div className="fixed" style={{ top: position.y, left: position.x, zIndex: 1000 }}>
+			<div className="flex flex-row bg-white">
+				{['q', 'r', 'b', 'n'].map((piece, i) => (
+					<div key={i} className="flex flex-row" onClick={() => onSelect(piece, move)}>
+						<Piece type={piece} color={color} width={50} height={50} />
+					</div>
+				))}
+			</div>
+		</div>
+	);
+}
+
 export default function Chessboard({ id, joinId }) {
 	const [boardState, setBoardState] = useState(null);
 	const [role, setRole] = useState(Role.PLAYER);
@@ -21,8 +35,18 @@ export default function Chessboard({ id, joinId }) {
 	const [playing, setPlaying] = useState(false);
 	const [flipped, setFlipped] = useState(false);
 	const [client, setClient] = useState(null);
+	const [selectingPromotion, setSelectingPromotion] = useState(false);
+	const [lastMove, setLastMove] = useState(null);
+	const [promotionMousePosition, setPromotionMousePosition] = useState(null);
 
 	const mousePosition = useMousePosition({ includeTouch: true });
+
+	function onSelectPromotion(piece, move) {
+		boardState.move({ from: move.from, to: move.to, promotion: piece });
+		sendMove(`${move.from}${move.to}${piece}`);
+		setBoardState(new Chess(boardState.fen()));
+		setSelectingPromotion(false);
+	};
 
 	function sendMove(move) {
 		if (!client) return;
@@ -103,6 +127,10 @@ export default function Chessboard({ id, joinId }) {
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`square ${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'} w-12 h-12`}
 								onMouseDown={() => {
+									if (selectingPromotion) {
+										setSelectingPromotion(false);
+										return;
+									};
 									if (!playing) return;
 									if (!boardState) return;
 									if (role === Role.SPECTATOR) return;
@@ -117,7 +145,14 @@ export default function Chessboard({ id, joinId }) {
 									if (hoverSquare) {
 										const moves = boardState.moves({ square: hoverSquare });
 										if (moves.some(move => move.includes(SQUARES[8 * (7 - i) + (7 - j)]))) {
-											
+
+											if (boardState.get(hoverSquare).type === 'p' && (i === 0 || i === 7)) {
+												setSelectingPromotion(true);
+												setLastMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+												setPromotionMousePosition({ x: mousePosition.x, y: mousePosition.y });
+												return;
+											}
+
 											boardState.move({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
 											sendMove(`${hoverSquare}${SQUARES[8 * (7 - i) + (7 - j)]}`);
 
@@ -147,6 +182,10 @@ export default function Chessboard({ id, joinId }) {
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`square ${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'} w-12 h-12`}
 								onMouseDown={() => {
+									if (selectingPromotion) {
+										setSelectingPromotion(false);
+										return;
+									};
 									if (!playing) return;
 									if (!boardState) return;
 									if (role === Role.SPECTATOR) return;
@@ -162,6 +201,13 @@ export default function Chessboard({ id, joinId }) {
 										const moves = boardState.moves({ square: hoverSquare });
 										if (moves.some(move => move.includes(SQUARES[8 * i + j]))) {
 											
+											if (boardState.get(hoverSquare).type === 'p' && (i === 0 || i === 7)) {
+												setSelectingPromotion(true);
+												setLastMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
+												setPromotionMousePosition({ x: mousePosition.x, y: mousePosition.y });
+												return;
+											}
+
 											boardState.move({ from: hoverSquare, to: SQUARES[8 * i + j] });
 											sendMove(`${hoverSquare}${SQUARES[8 * i + j]}`);
 
@@ -185,6 +231,8 @@ export default function Chessboard({ id, joinId }) {
 					</div>
 				))
 			}
+
+			{selectingPromotion ? promotionMenu({ onSelect: onSelectPromotion, color: color, position: promotionMousePosition, move: lastMove }) : null}
 		</>
 	);
 };

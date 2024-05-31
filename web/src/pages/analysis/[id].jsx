@@ -7,7 +7,6 @@ export default function AnalysisID() {
 
     return (
         <>
-            <h1>Analysis {id}</h1>
         </>
     );
 }

@@ -49,6 +49,8 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
     board.makeMove(m);
     moves.push_back(move);
 
+    lastMove = std::chrono::system_clock::now();
+
     for (ws::ChessConnection *connection : connections) {
         connection->send("{\"board\": \"" + board.getFen() + "\"}");
     }
@@ -94,11 +96,11 @@ void ws::Game::handleJoin(crow::websocket::connection &connection, crow::json::r
     newConnection->send("{\"gameId\": \"" + gameId + "\", \"color\": \"" + (newConnection->getColor() == chess::Color::BLACK ? "black" : "white") + "\", \"role\": \"" + (newConnection->getRole() == ws::ConnectionRole::PLAYER ? "player" : "spectator") + "\"}");
     newConnection->send("{\"board\": \"" + board.getFen() + "\"}");
 
-    if (getNumPlayers() == 2 && !spectator) {
-        state = ws::GameState::IN_PROGRESS;
+    for (ws::ChessConnection *w_connection : connections) {
+        w_connection->send("{\"playing\": true}");
+    }
 
-        for (ws::ChessConnection *w_connection : connections) {
-            w_connection->send("{\"playing\": true}");
-        }
+    if (getNumPlayers() == 2 && !spectator && state == ws::GameState::WAITING) {
+        state = ws::GameState::IN_PROGRESS;
     }
 }
