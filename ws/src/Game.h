@@ -135,8 +135,6 @@ public:
 
         state = GameState::FINISHED;
         // todo save the board and players to a db
-
-
     }
 };
 

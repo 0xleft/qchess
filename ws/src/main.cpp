@@ -2,6 +2,7 @@
 #include <vector>
 #include <mutex>
 #include "Game.h"
+#include "Database.hpp"
 
 int main() {
 	crow::Crow<> app;
@@ -9,6 +10,10 @@ int main() {
 	std::mutex mtx;
 	std::vector<crow::websocket::connection*> users;
 	std::vector<ws::Game*> games;
+
+	ws::Database database;
+	ws::Game* test = new ws::Game();
+	database.saveGame(test);
 
 	// start thread to check for inactive games
 	std::thread([&]() {

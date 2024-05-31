@@ -17,7 +17,7 @@ namespace ws
 
     public:
         Database() {
-            conn = pqxx::connection("dbname=mydb user=keutoi");
+            conn = pqxx::connection("dbname=squichess user=postgres");
         }
 
         void createSchema() {
