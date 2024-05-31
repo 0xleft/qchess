@@ -1,13 +1,12 @@
+#pragma once
+
 #include <chess.hpp>
 #include <crow.h>
 #include <vector>
 #include <chess.hpp>
 #include "Connection.hpp"
 #include "Utils.h"
-#include "Database.h"
-
-#ifndef GAME_H
-#define GAME_H
+#include <tao/pq.hpp>
 
 namespace ws
 {
@@ -18,8 +17,24 @@ enum class GameState {
     FINISHED
 };
 
+class Game;
+
+class Database {
+private:
+    std::shared_ptr<tao::pq::connection> dbConnection = tao::pq::connection::create("dbname=movedb user=postgres password=postgres host=localhost");
+
+public:
+    Database();
+
+    void init();
+    void saveGame(ws::Game* game);
+
+    ws::Game* loadGame(std::string gameId);
+};
+
+
 class Game {
-    const float MAX_CREATION_TIME_SECONDS = 500.0f;
+    const float MAX_CREATION_TIME_SECONDS = 1.0f;
 
 private:
     chess::Board board = chess::Board();
@@ -32,7 +47,7 @@ private:
     std::vector<std::string> moves;
     std::chrono::system_clock::time_point created = std::chrono::system_clock::now();
     std::chrono::system_clock::time_point lastMove = std::chrono::system_clock::now();
-
+    
     void createId() {
         gameId = utils::sha256(std::to_string(rand()) + std::to_string(std::chrono::system_clock::now().time_since_epoch().count()));
         whiteId = utils::sha256(std::to_string(rand())).substr(0, 20);
@@ -55,6 +70,17 @@ public:
     }
     void handleMove(crow::websocket::connection& connection, crow::json::rvalue json);
     void handleJoin(crow::websocket::connection& connection, crow::json::rvalue json);
+
+    void setGameId(std::string id) {
+        gameId = id;
+    }
+
+    void setMovesFromString(std::string movesString) {
+        std::vector<std::string> moves = utils::split(movesString, ",");
+        for (std::string move : moves) {
+            this->moves.push_back(move);
+        }
+    }
 
     void setPrivate(bool isPrivate) {
         privateGame = isPrivate;
@@ -134,11 +160,8 @@ public:
         }
 
         state = GameState::FINISHED;
-        // todo save the board and players to a db
     }
 };
 
 
 } // namespace ws
-
-#endif

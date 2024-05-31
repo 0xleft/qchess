@@ -2,7 +2,6 @@
 #include <vector>
 #include <mutex>
 #include "Game.h"
-#include "Database.h"
 
 int main() {
 	std::cout << "Starting server... :)" << std::endl;
@@ -14,8 +13,6 @@ int main() {
 	std::vector<ws::Game*> games;
 
 	ws::Database database;
-	ws::Game* test = new ws::Game();
-	database.saveGame(test);
 
 	// start thread to check for inactive games
 	std::thread([&]() {
@@ -101,18 +98,8 @@ int main() {
 				{"id", game->getGameId()}
 			});
 
-			if (req.url_params.get("random")) {
-				if (rand() % 2 == 0) {
-					json["whiteId"] = game->getWhiteId();
-					json["blackId"] = game->getBlackId();
-				} else {
-					json["whiteId"] = game->getBlackId();
-					json["blackId"] = game->getWhiteId();
-				}
-			} else {
-				json["whiteId"] = game->getWhiteId();
-				json["blackId"] = game->getBlackId();
-			}
+			json["whiteId"] = game->getWhiteId();
+			json["blackId"] = game->getBlackId();
 
 			crow::response response;
 			response.set_header("Content-Type", "application/json");
@@ -121,17 +108,40 @@ int main() {
 			return response;
 		});
 
-	// for debugging only
-	CROW_ROUTE(app, "/ws/list")
-		([&]() {
-			std::lock_guard<std::mutex> _(mtx);
+	CROW_ROUTE(app, "/ws/game")
+		([&](const crow::request& req) {
 
-			// returns length of games
-			crow::json::wvalue json;
-			json["games"] = games.size();
+			if (!req.url_params.get("id")) {
+				crow::response response;
+				response.set_header("Content-Type", "application/json");
+				response.write("{\"error\": \"Invalid request\"}");
+				response.set_header("Access-Control-Allow-Origin", "*"); // for development purposes only
+				return response;
+			}
+
+			ws::Game* game = database.loadGame(req.url_params.get("id"));
+
+			if (!game) {
+				crow::response response;
+				response.set_header("Content-Type", "application/json");
+				response.write("{\"error\": \"Game not found\"}");
+				response.set_header("Access-Control-Allow-Origin", "*"); // for development purposes only
+				return response;
+			}
+
+			crow::json::wvalue json({
+				{"id", game->getGameId()},
+				{"whiteId", game->getWhiteId()},
+				{"blackId", game->getBlackId()},
+				{"moves", game->getMovesString()}
+			});
+
+			delete game;
 
 			crow::response response;
+			response.set_header("Content-Type", "application/json");
 			response.write(json.dump());
+			response.set_header("Access-Control-Allow-Origin", "*"); // for development purposes only
 			return response;
 		});
 

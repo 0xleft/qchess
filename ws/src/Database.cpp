@@ -1,45 +1,44 @@
-#include "Database.h"
+#include "Game.h"
 
 ws::Database::Database() {
     init();
 }
 
 void ws::Database::init() {
-    // pqxx::work w(conn);
     dbConnection->execute("CREATE TABLE IF NOT EXISTS games ("
         "id SERIAL PRIMARY KEY,"
         "game_id TEXT NOT NULL,"
-        "moves TEXT[] NOT NULL"
+        "moves TEXT NOT NULL"
     ")");
 
     dbConnection->prepare("insert_game", "INSERT INTO games (game_id, moves) VALUES ($1, $2)");
     dbConnection->prepare("select_game", "SELECT * FROM games WHERE game_id = $1");
-
 }
 
 void ws::Database::saveGame(ws::Game *game) {
-    const auto tr = dbConnection->transaction();
-
-    dbConnection->execute("insert_game", game->getGameId(), game->getMovesString());
-
-    tr->commit();
+    tao::pq::result result = dbConnection->execute("insert_game", game->getGameId(), game->getMovesString());
+    if (result.rows_affected() != 1) {
+        throw std::runtime_error("Failed to save game");
+    }
 }
 
-ws::Game ws::Database::loadGame(const std::string &gameId) {
-    // pqxx::work w(conn);
-    // if (!utils::isAlphanumeric(gameId)) {
-    //     return ws::Game();
-    // }
-    // pqxx::result r = w.exec("SELECT * FROM games WHERE game_id = '" + gameId + "'");
-    // w.commit();
-// 
-    // if (r.empty()) {
-    //     return ws::Game();
-    // }
+ws::Game* ws::Database::loadGame(std::string gameId) {
+    if (gameId.empty()) {
+        return nullptr;
+    }
 
-    ws::Game game;
-    // game.setGameId(r[0]["game_id"].as<std::string>());
-    // game.setMoves(r[0]["moves"].as<std::vector<std::string>>());
+    if (!utils::isAlphanumeric(gameId)) {
+        return nullptr;
+    }
+
+    tao::pq::result result = dbConnection->execute("select_game", gameId);
+    if (result.size() != 1) {
+        return nullptr;
+    }
+
+    ws::Game* game = new ws::Game();
+    game->setGameId(result[0]["game_id"].as<std::string>());
+    game->setMovesFromString(result[0]["moves"].as<std::string>());
 
     return game;
 }

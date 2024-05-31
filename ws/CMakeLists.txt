@@ -3,10 +3,10 @@ project(ws)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(ws
-    src/main.cpp
-    src/Game.cpp
     src/Utils.cpp
     src/Database.cpp
+    src/Game.cpp
+    src/main.cpp
 )
 
 set(OPENSSL_USE_STATIC_LIBS TRUE)
