@@ -29,11 +29,11 @@ void Engine::printFen() {
 float Engine::materialEval(chess::Board& board) {
 	float score = 0;
 
-	score += board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() - board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).count() * 100;
-	score += board.pieces(chess::PieceType::KNIGHT, chess::Color::WHITE).count() - board.pieces(chess::PieceType::KNIGHT, chess::Color::BLACK).count() * 300;
-	score += board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() - board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK).count() * 300;
-	score += board.pieces(chess::PieceType::ROOK, chess::Color::WHITE).count() - board.pieces(chess::PieceType::ROOK, chess::Color::BLACK).count() * 500;
-	score += board.pieces(chess::PieceType::QUEEN, chess::Color::WHITE).count() - board.pieces(chess::PieceType::QUEEN, chess::Color::BLACK).count() * 900;
+	score += (board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() - board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).count()) * 1;
+	score += (board.pieces(chess::PieceType::KNIGHT, chess::Color::WHITE).count() - board.pieces(chess::PieceType::KNIGHT, chess::Color::BLACK).count()) * 3;
+	score += (board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() - board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK).count()) * 3;
+	score += (board.pieces(chess::PieceType::ROOK, chess::Color::WHITE).count() - board.pieces(chess::PieceType::ROOK, chess::Color::BLACK).count()) * 5;
+	score += (board.pieces(chess::PieceType::QUEEN, chess::Color::WHITE).count() - board.pieces(chess::PieceType::QUEEN, chess::Color::BLACK).count()) * 9;
 
 	return score;
 }
@@ -47,22 +47,44 @@ float Engine::evaluate(chess::Board& board) {
 	return score * (board.sideToMove() == chess::Color::WHITE ? 1 : -1);
 }
 
-float Engine::negamax(int depth, chess::Board& boardCopy) {
-	if (depth == 0) return evaluate(boardCopy);
-	
-	float max = -1000000;
+float Engine::quiescence(float alpha, float beta, chess::Board& boardCopy) {
+	float stand_pat = evaluate(boardCopy);
+	if (stand_pat >= beta) return beta;
+	if (alpha < stand_pat) alpha = stand_pat;
 
 	chess::Movelist legalMoves;
 	chess::movegen::legalmoves(legalMoves, boardCopy);
 
 	for (chess::Move move : legalMoves) {
-		boardCopy.makeMove(move);
-		float eval = -negamax(depth - 1, boardCopy);
-		boardCopy.unmakeMove(move);
-		if (eval > max) max = eval;
+		if (boardCopy.isCapture(move)) {
+			boardCopy.makeMove(move);
+			float score = -quiescence(-beta, -alpha, boardCopy);
+			boardCopy.unmakeMove(move);
+
+			if (score >= beta) return beta;
+			if (score > alpha) alpha = score;
+		}
 	}
 
-	return max;
+	return alpha;
+}
+
+float Engine::negamax(int depth, float alpha, float beta, chess::Board& boardCopy) {
+	if (depth == 0) return quiescence(alpha, beta, boardCopy);
+	
+	chess::Movelist legalMoves;
+	chess::movegen::legalmoves(legalMoves, boardCopy);
+
+	for (chess::Move move : legalMoves) {
+		boardCopy.makeMove(move);
+		float score = -negamax(depth - 1, -alpha, -beta, boardCopy);
+		boardCopy.unmakeMove(move);
+
+		if (score >= beta) return beta;
+		if (score > alpha) alpha = score;
+	}
+
+	return alpha;
 }
 
 std::string Engine::getBestMove(bool isWhite) {
@@ -77,7 +99,7 @@ std::string Engine::getBestMove(bool isWhite) {
 
 	for (chess::Move move : legalMoves) {
 		boardCopy.makeMove(move);
-		float eval = -negamax(3, boardCopy);
+		float eval = -negamax(4, -1000000, 1000000, boardCopy);
 		boardCopy.unmakeMove(move);
 
 		if (eval > max) {

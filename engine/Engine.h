@@ -9,7 +9,8 @@ private:
     int nodes;
 
     float evaluate(chess::Board& board);
-    float negamax(int depth, chess::Board& board);
+    float negamax(int depth, float alpha, float beta, chess::Board& board);
+    float quiescence(float alpha, float beta, chess::Board& boardCopy);
     float materialEval(chess::Board& board);
 
 public:
