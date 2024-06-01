@@ -12,7 +12,11 @@ export default function AnalysisIndex() {
 	const engine = useRef(null);
 
 	function onMove(move) {
+		if (move.promotion === "") {
+			delete move["promotion"];
+		}
 		boardState.move(move);
+		setBoardState(new Chess(boardState.fen()));
 		engine.current.setFen(boardState.fen());
 	}
 
@@ -50,7 +54,7 @@ export default function AnalysisIndex() {
 				let bestMove = engine.current.getBestMove(boardState.turn() === 'w');
 				
 				try {
-					onMove({ from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) });
+					onMove({ from: bestMove.slice(0, 2), to: bestMove.slice(2, 4), promotion: bestMove.slice(4) });
 				} catch (e) {
 					console.log(e);
 				}

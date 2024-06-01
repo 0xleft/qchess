@@ -39,60 +39,56 @@ float Engine::materialEval(chess::Board& board) {
 }
 
 float Engine::evaluate(chess::Board& board) {
+	this->nodes++;
 	float score = 0;
 
 	score += materialEval(board);
 
-	return score;
+	return score * (board.sideToMove() == chess::Color::WHITE ? 1 : -1);
 }
 
-float Engine::minimax(int depth, bool isWhite, chess::Board& boardCopy) {
-	if (depth == 0) return evaluate(boardCopy) * (isWhite ? 1 : -1);
+float Engine::negamax(int depth, chess::Board& boardCopy) {
+	if (depth == 0) return evaluate(boardCopy);
 	
-	float score = (isWhite ? -1000000 : 1000000);
+	float max = -1000000;
 
 	chess::Movelist legalMoves;
 	chess::movegen::legalmoves(legalMoves, boardCopy);
 
 	for (chess::Move move : legalMoves) {
 		boardCopy.makeMove(move);
-		float eval = minimax(depth - 1, !isWhite, boardCopy);
+		float eval = -negamax(depth - 1, boardCopy);
 		boardCopy.unmakeMove(move);
-		if (isWhite && eval > score) {
-			score = eval;
-		}
-		if (!isWhite && eval < score) {
-			score = eval;
-		}
+		if (eval > max) max = eval;
 	}
 
-	return score;
+	return max;
 }
 
 std::string Engine::getBestMove(bool isWhite) {
 	chess::Movelist legalMoves;
 	chess::movegen::legalmoves(legalMoves, board);
 
-	float score = (isWhite ? -1000000 : 1000000);
-	chess::Move bestMove;
+	this->nodes = 0;
+	float max = -1000000;
+	chess::Move bestMove = legalMoves[0];
 
 	chess::Board boardCopy = chess::Board(board.getFen());
 
 	for (chess::Move move : legalMoves) {
 		boardCopy.makeMove(move);
-		float eval = evaluate(boardCopy);
+		float eval = -negamax(3, boardCopy);
 		boardCopy.unmakeMove(move);
-		if (isWhite && eval > score) {
-			score = eval;
+
+		if (eval > max) {
+			max = eval;
 			bestMove = move;
 		}
-		if (!isWhite && eval < score) {
-			score = eval;
-			bestMove = move;
-		}
+
+		std::cout << "Move: " << chess::uci::moveToUci(move) << " Eval: " << eval << std::endl;
 	}
 
-	std::cout << "Score: " << score << "Board: " << board.getFen() << std::endl;
+	std::cout << "Score: " << max << " Nodes: " << this->nodes << " Move: " << chess::uci::moveToUci(bestMove) << std::endl;
 	return chess::uci::moveToUci(bestMove);
 }
 

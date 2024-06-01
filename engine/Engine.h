@@ -6,9 +6,10 @@ class Engine {
 
 private:
     chess::Board board;
+    int nodes;
 
     float evaluate(chess::Board& board);
-    float minimax(int depth, bool isWhite, chess::Board& board);
+    float negamax(int depth, chess::Board& board);
     float materialEval(chess::Board& board);
 
 public:
