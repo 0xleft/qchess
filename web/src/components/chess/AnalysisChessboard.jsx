@@ -27,7 +27,7 @@ function promotionMenu({ onSelect, color, position, move }) {
 	);
 }
 
-export default function Chessboard({ moves, onMove, fen }) {
+export default function Chessboard({ onMove, fen }) {
 
 	const [boardState, setBoardState] = useState(new Chess(fen));
 	const [hoverSquare, setHoverSquare] = useState(null);
@@ -40,6 +40,7 @@ export default function Chessboard({ moves, onMove, fen }) {
 
 	function onSelectPromotion(piece, move) {
 		boardState.move({ from: move.from, to: move.to, promotion: piece });
+        onMove({ from: move.from, to: move.to, promotion: piece })
 		setBoardState(new Chess(boardState.fen()));
 		setSelectingPromotion(false);
 	};
@@ -105,6 +106,7 @@ export default function Chessboard({ moves, onMove, fen }) {
 											}
 
 											boardState.move({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+                                            onMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] })
 
 											setBoardState(new Chess(boardState.fen()));
 										}
@@ -156,6 +158,7 @@ export default function Chessboard({ moves, onMove, fen }) {
 											}
 
 											boardState.move({ from: hoverSquare, to: SQUARES[8 * i + j] });
+                                            onMove({ from: hoverSquare, to: SQUARES[8 * i + j] })
 
 											setBoardState(new Chess(boardState.fen()));
 										}
