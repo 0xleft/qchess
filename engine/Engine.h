@@ -7,10 +7,14 @@ class Engine {
 private:
     chess::Board board;
 
+    float evaluate();
+    float minimax(int depth, bool isWhite, chess::Board& board);
+
 public:
     Engine(std::string fen);
     ~Engine();
-    float evaluate();
     void move(std::string move);
     void setFen(std::string fen);
+    void printFen();
+    std::string getBestMove(bool isWhite);
 };
