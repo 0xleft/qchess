@@ -38,7 +38,7 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
             found = true;
             break;
         }
-    }    
+    }
 
     if (!found) {
         connection.send_text("{\"error\": \"Invalid move\", \"board\": \"" + board.getFen() + "\"}");

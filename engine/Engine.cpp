@@ -1,6 +1,4 @@
-#include "../ws/include/chess.hpp"
 #include "Engine.h"
-#include <math.h>
 
 #include <emscripten.h>
 #include <emscripten/bind.h>
@@ -9,14 +7,24 @@
 extern "C" {
 #endif
 
-Engine::Engine() {
+Engine::Engine(std::string fen) {
+	board = chess::Board(fen);
 }
 
 Engine::~Engine() {
 }
 
-int Engine::test() {
+float Engine::evaluate() {
 	return 42;
+}
+
+void Engine::move(std::string move) {
+	chess::Move m = chess::uci::uciToMove(board, move);
+    board.makeMove(m);
+}
+
+void Engine::setFen(std::string fen) {
+	board = chess::Board(fen);
 }
 
 #ifdef __cplusplus
@@ -25,6 +33,8 @@ int Engine::test() {
 
 EMSCRIPTEN_BINDINGS (c) {
 	emscripten::class_<Engine>("Engine")
-		.constructor()
-		.function("test", &Engine::test);
-};
+		.constructor<std::string>()
+		.function("move", &Engine::move)
+		.function("setFen", &Engine::setFen)
+		.function("evaluate", &Engine::evaluate);
+}

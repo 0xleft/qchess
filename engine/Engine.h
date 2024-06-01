@@ -1,8 +1,16 @@
 #pragma once
 
+#include "../ws/include/chess.hpp"
+
 class Engine {
+
+private:
+    chess::Board board;
+
 public:
-    Engine();
+    Engine(std::string fen);
     ~Engine();
-    int test();
+    float evaluate();
+    void move(std::string move);
+    void setFen(std::string fen);
 };
