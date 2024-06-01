@@ -1,3 +1,4 @@
 #!/bin/bash
 
+createdb -h localhost -U postgres movedb
 psql -h localhost -U postgres -d movedb -a -f init.sql

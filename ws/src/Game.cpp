@@ -3,27 +3,27 @@
 void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::rvalue json) {
     ws::ChessConnection *conn = getConnection(connection);
     if (conn == nullptr) {
-        connection.send_text("{\"error\": \"Not in game\"}");
+        connection.send_text("{\"error\": \"Not in game\", \"board\": \"" + board.getFen() + "\"}");
         return;
     }
 
     if (conn->getRole() == ws::ConnectionRole::SPECTATOR) {
-        conn->send("{\"error\": \"Spectators cannot make moves\"}");
+        conn->send("{\"error\": \"Spectators cannot make moves\", \"board\": \"" + board.getFen() + "\"}");
         return;
     }
 
     if (state != ws::GameState::IN_PROGRESS) {
-        conn->send("{\"error\": \"Game not in progress\"}");
+        conn->send("{\"error\": \"Game not in progress\", \"board\": \"" + board.getFen() + "\"}");
         return;
     }
 
     if (board.sideToMove() != conn->getColor()) {
-        conn->send("{\"error\": \"Not your turn\"}");
+        conn->send("{\"error\": \"Not your turn\", \"board\": \"" + board.getFen() + "\"}");
         return;
     }
 
     if (!json.has("move")) {
-        connection.send_text("{\"error\": \"Invalid move\"}");
+        connection.send_text("{\"error\": \"Invalid move\", \"board\": \"" + board.getFen() + "\"}");
         return;
     }
 
@@ -41,7 +41,7 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
     }    
 
     if (!found) {
-        connection.send_text("{\"error\": \"Invalid move\"}");
+        connection.send_text("{\"error\": \"Invalid move\", \"board\": \"" + board.getFen() + "\"}");
         return;
     }
 

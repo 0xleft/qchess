@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useRouter } from 'next/router';
-import Chessboard from '@/components/chess/Chessboard';
+import Chessboard from '@/components/chess/PlayChessboard';
 import { Button } from '@mui/material';
 
 export const getServerSideProps = async ({ req, res }) => {

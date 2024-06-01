@@ -28,6 +28,10 @@ function promotionMenu({ onSelect, color, position, move }) {
 }
 
 export default function Chessboard({ id, joinId }) {
+	if (id === undefined) {
+		return null;
+	}
+
 	const [boardState, setBoardState] = useState(null);
 	const [role, setRole] = useState(Role.PLAYER);
 	const [color, setColor] = useState(Color.WHITE);
@@ -70,7 +74,6 @@ export default function Chessboard({ id, joinId }) {
 		client.onmessage = (message) => {
 			if (JSON.parse(message.data).error) {
 				console.error(JSON.parse(message.data).error);
-				return;
 			}
 
 			if (JSON.parse(message.data).board) {

@@ -1,4 +1,4 @@
-import Chessboard from '@/components/chess/Chessboard';
+import Chessboard from '@/components/chess/PlayChessboard';
 import { Button } from '@mui/material';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
