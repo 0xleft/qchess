@@ -19,25 +19,37 @@ void Engine::move(std::string move) {
 }
 
 void Engine::setFen(std::string fen) {
-	board = chess::Board(fen);
+	board.setFen(fen);
 }
 
 void Engine::printFen() {
 	std::cout << board.getFen() << std::endl;
 }
 
-float Engine::evaluate() {
-	if (board.isGameOver().first == chess::GameResultReason::CHECKMATE) {
-		return (board.sideToMove() == chess::Color::WHITE ? -1000000 : 1000000);
-	}
+float Engine::materialEval(chess::Board& board) {
+	float score = 0;
 
-	return 0;
+	score += board.pieces(chess::PieceType::PAWN, chess::Color::WHITE).count() - board.pieces(chess::PieceType::PAWN, chess::Color::BLACK).count() * 100;
+	score += board.pieces(chess::PieceType::KNIGHT, chess::Color::WHITE).count() - board.pieces(chess::PieceType::KNIGHT, chess::Color::BLACK).count() * 300;
+	score += board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).count() - board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK).count() * 300;
+	score += board.pieces(chess::PieceType::ROOK, chess::Color::WHITE).count() - board.pieces(chess::PieceType::ROOK, chess::Color::BLACK).count() * 500;
+	score += board.pieces(chess::PieceType::QUEEN, chess::Color::WHITE).count() - board.pieces(chess::PieceType::QUEEN, chess::Color::BLACK).count() * 900;
+
+	return score;
+}
+
+float Engine::evaluate(chess::Board& board) {
+	float score = 0;
+
+	score += materialEval(board);
+
+	return score;
 }
 
 float Engine::minimax(int depth, bool isWhite, chess::Board& boardCopy) {
-	if (depth == 0) return evaluate() * (isWhite ? 1 : -1);
+	if (depth == 0) return evaluate(boardCopy) * (isWhite ? 1 : -1);
 	
-	float score = (isWhite ? -100000 : 100000);
+	float score = (isWhite ? -1000000 : 1000000);
 
 	chess::Movelist legalMoves;
 	chess::movegen::legalmoves(legalMoves, boardCopy);
@@ -46,7 +58,10 @@ float Engine::minimax(int depth, bool isWhite, chess::Board& boardCopy) {
 		boardCopy.makeMove(move);
 		float eval = minimax(depth - 1, !isWhite, boardCopy);
 		boardCopy.unmakeMove(move);
-		if (eval > score) {
+		if (isWhite && eval > score) {
+			score = eval;
+		}
+		if (!isWhite && eval < score) {
 			score = eval;
 		}
 	}
@@ -65,15 +80,19 @@ std::string Engine::getBestMove(bool isWhite) {
 
 	for (chess::Move move : legalMoves) {
 		boardCopy.makeMove(move);
-		float eval = minimax(3, !isWhite, boardCopy);
+		float eval = evaluate(boardCopy);
 		boardCopy.unmakeMove(move);
-		if (eval > score) {
+		if (isWhite && eval > score) {
+			score = eval;
+			bestMove = move;
+		}
+		if (!isWhite && eval < score) {
 			score = eval;
 			bestMove = move;
 		}
 	}
 
-	std::cout << "Score: " << score << std::endl;
+	std::cout << "Score: " << score << "Board: " << board.getFen() << std::endl;
 	return chess::uci::moveToUci(bestMove);
 }
 

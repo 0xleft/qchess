@@ -7,13 +7,13 @@ import { useEffect, useRef, useState } from 'react';
 export default function AnalysisIndex() {
 
 	const [engineLoaded, setEngineLoaded] = useState(false);
-	const [boardState, setBoardState] = useState(new Chess("6B1/1p6/1p6/3R4/1k6/8/Q2K4/8 w - - 0 1"));
+	const [boardState, setBoardState] = useState(new Chess("rnbqkb1r/ppp1pppp/3p1n2/4P3/3P4/8/PPP2PPP/RNBQKBNR w KQkq - 0 1"));
 
 	const engine = useRef(null);
 
 	function onMove(move) {
 		boardState.move(move);
-		engine.current.move(move.from + move.to + (move.promotion ? move.promotion : ''));
+		engine.current.setFen(boardState.fen());
 	}
 
 	function loadEngine() {
@@ -40,11 +40,21 @@ export default function AnalysisIndex() {
 		<>
 			<Script src="/engine.js" strategy='beforeInteractive'/>
 
-			<Chessboard onMove={onMove} fen={boardState.fen()} />
+			<Chessboard onMove={onMove} boardState={boardState} />
 
 			<Button onClick={() => {
-				console.log(engine.current.getBestMove(true));
+				console.log(engine.current.getBestMove(boardState.turn() === 'w'));
 			}}>Best move</Button>
+
+			<Button onClick={() => {
+				let bestMove = engine.current.getBestMove(boardState.turn() === 'w');
+				
+				try {
+					onMove({ from: bestMove.slice(0, 2), to: bestMove.slice(2, 4) });
+				} catch (e) {
+					console.log(e);
+				}
+			}}>Do best move</Button>
 		</>
 	)
 }

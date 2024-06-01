@@ -7,8 +7,9 @@ class Engine {
 private:
     chess::Board board;
 
-    float evaluate();
+    float evaluate(chess::Board& board);
     float minimax(int depth, bool isWhite, chess::Board& board);
+    float materialEval(chess::Board& board);
 
 public:
     Engine(std::string fen);
