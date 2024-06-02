@@ -8,11 +8,16 @@ private:
     chess::Board board;
     int nodes;
 
-    float evaluate(chess::Board& board);
-    float negamax(int depth, float alpha, float beta, chess::Board& board);
-    float quiescence(float alpha, float beta, chess::Board& boardCopy);
-    float materialEval(chess::Board& board);
+    float evaluate();
+    float negamax(int depth);
+    float quiescence(float alpha, float beta);
+    float materialEval();
+    float getPieceValue(chess::PieceType piece);
 
+
+    int partition(chess::Movelist& moves, int low, int high);
+    void quickSort(chess::Movelist& moves, int low, int high);
+    void orderMoves(chess::Movelist& moves, bool isWhite);
 public:
     Engine(std::string fen);
     ~Engine();

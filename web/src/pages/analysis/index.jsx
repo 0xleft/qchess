@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 export default function AnalysisIndex() {
 
 	const [engineLoaded, setEngineLoaded] = useState(false);
-	const [boardState, setBoardState] = useState(new Chess("rnbqkb1r/ppp1pppp/3p1n2/4P3/3P4/8/PPP2PPP/RNBQKBNR w KQkq - 0 1"));
+	const [boardState, setBoardState] = useState(new Chess("r3k2r/p1ppqpb1/Bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPB1PPP/R3K2R b KQkq - 0 1"));
 
 	const engine = useRef(null);
 
