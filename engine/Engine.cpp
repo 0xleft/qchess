@@ -72,6 +72,8 @@ float Engine::quiescence(float alpha, float beta, chess::Board& boardCopy) {
 float Engine::negamax(int depth, float alpha, float beta, chess::Board& boardCopy) {
 	if (depth == 0) return quiescence(alpha, beta, boardCopy);
 	
+	float max = -1000000;
+
 	chess::Movelist legalMoves;
 	chess::movegen::legalmoves(legalMoves, boardCopy);
 
@@ -80,8 +82,13 @@ float Engine::negamax(int depth, float alpha, float beta, chess::Board& boardCop
 		float score = -negamax(depth - 1, -alpha, -beta, boardCopy);
 		boardCopy.unmakeMove(move);
 
-		if (score >= beta) return beta;
-		if (score > alpha) alpha = score;
+		if (score >= beta) return score;
+		if (score > max) {
+			max = score;
+			if (score > alpha) {
+				alpha = score;
+			}
+		} 
 	}
 
 	return alpha;
@@ -99,7 +106,7 @@ std::string Engine::getBestMove(bool isWhite) {
 
 	for (chess::Move move : legalMoves) {
 		boardCopy.makeMove(move);
-		float eval = -negamax(4, -1000000, 1000000, boardCopy);
+		float eval = -negamax(4, -100000, 100000, boardCopy);
 		boardCopy.unmakeMove(move);
 
 		if (eval > max) {
