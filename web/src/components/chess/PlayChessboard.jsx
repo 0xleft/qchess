@@ -19,7 +19,7 @@ function promotionMenu({ onSelect, color, position, move }) {
 			<div className="flex flex-row bg-white">
 				{['q', 'r', 'b', 'n'].map((piece, i) => (
 					<div key={i} className="flex flex-row" onClick={() => onSelect(piece, move)}>
-						<Piece type={piece} color={color} width={50} height={50} />
+						<Piece type={piece} color={color} width={size} height={size} />
 					</div>
 				))}
 			</div>
@@ -27,7 +27,7 @@ function promotionMenu({ onSelect, color, position, move }) {
 	);
 }
 
-export default function Chessboard({ id, joinId }) {
+export default function Chessboard({ id, joinId, size = 50 }) {
 	if (id === undefined) {
 		return null;
 	}
@@ -118,17 +118,17 @@ export default function Chessboard({ id, joinId }) {
 					<Piece
 						type={boardState.get(hoverSquare).type}
 						color={boardState.get(hoverSquare).color}
-						width={50}
-						height={50}
+						width={size}
+						height={size}
 					/>
 				) : null}
 			</div>
 
 			{flipped ?
 				Array.from({ length: 8 }).map((_, i) => (
-					<div key={i} className="h-12 flex flex-row select-none">
+					<div key={i} className="flex flex-row select-none" style={{ height: size }}>
 						{Array.from({ length: 8 }).map((_, j) => (
-							<div key={j} className={`square ${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'} w-12 h-12`}
+							<div key={j} className={`${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'}`} style={{ width: size, height: size }}
 								onMouseDown={() => {
 									if (selectingPromotion) {
 										setSelectingPromotion(false);
@@ -181,9 +181,9 @@ export default function Chessboard({ id, joinId }) {
 				))
 			:
 				Array.from({ length: 8 }).map((_, i) => (
-					<div key={i} className="h-12 flex flex-row select-none">
+					<div key={i} className="flex flex-row select-none" style={{ height: size }}>
 						{Array.from({ length: 8 }).map((_, j) => (
-							<div key={j} className={`square ${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'} w-12 h-12`}
+							<div key={j} className={`${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'}`} style={{ width: size, height: size }}
 								onMouseDown={() => {
 									if (selectingPromotion) {
 										setSelectingPromotion(false);
@@ -224,8 +224,8 @@ export default function Chessboard({ id, joinId }) {
 									<Piece
 										type={boardState.get(SQUARES[8 * i + j]).type}
 										color={boardState.get(SQUARES[8 * i + j]).color}
-										width={50}
-										height={50}
+										width={size}
+										height={size}
 										props={{ style: { pointerEvents: 'none', userSelect: 'none' } }}
 									/>
 								) : null}
@@ -235,7 +235,7 @@ export default function Chessboard({ id, joinId }) {
 				))
 			}
 
-			{selectingPromotion ? promotionMenu({ onSelect: onSelectPromotion, color: color, position: promotionMousePosition, move: lastMove }) : null}
+			{selectingPromotion ? promotionMenu({ onSelect: onSelectPromotion, color: color, position: promotionMousePosition, move: lastMove, size: size }) : null}
 		</>
 	);
 };

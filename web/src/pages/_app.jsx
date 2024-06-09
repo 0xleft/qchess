@@ -9,14 +9,23 @@ import { AppCacheProvider } from '@mui/material-nextjs/v13-pagesRouter';
 
 import RootLayout from '@/components/Layout';
 import { SessionProvider } from 'next-auth/react';
+import { ThemeProvider, createTheme } from '@mui/material';
+
+const darkTheme = createTheme({
+	palette: {
+	  	mode: 'dark',
+	},
+});
 
 export default function App({ Component, pageProps }) {
 	return (
 		<AppCacheProvider>
 			<SessionProvider session={pageProps.session}>
-				<RootLayout>
-					<Component {...pageProps} />
-				</RootLayout>
+				<ThemeProvider theme={darkTheme}>
+					<RootLayout>
+						<Component {...pageProps} />
+					</RootLayout>
+				</ThemeProvider>
 			</SessionProvider>
 		</AppCacheProvider>
 	)

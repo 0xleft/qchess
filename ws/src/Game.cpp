@@ -45,6 +45,8 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
         return;
     }
 
+    incrementTime();
+
     chess::Move m = chess::uci::uciToMove(board, move);
     board.makeMove(m);
     moves.push_back(move);
@@ -93,7 +95,16 @@ void ws::Game::handleJoin(crow::websocket::connection &connection, crow::json::r
         connections.push_back(newConnection);
     }
 
-    newConnection->send("{\"gameId\": \"" + gameId + "\", \"color\": \"" + (newConnection->getColor() == chess::Color::BLACK ? "black" : "white") + "\", \"role\": \"" + (newConnection->getRole() == ws::ConnectionRole::PLAYER ? "player" : "spectator") + "\"}");
+    for (ws::ChessConnection *connection : connections) {
+        if (connection->getColor() == newConnection->getColor() && connection != newConnection) {
+            connection->send("{\"error\": \"Player of that color already connected\"}");
+            connections.pop_back();
+            delete newConnection;
+            return;
+        }
+    }
+
+    newConnection->send("{\"gameId\": \"" + gameId + "\", \"color\": \"" + (newConnection->getColor() == chess::Color::BLACK ? "black" : "white") + "\", \"role\": \"" + (newConnection->getRole() == ws::ConnectionRole::PLAYER ? "player" : "spectator") + "\", \"whiteTime\": " + std::to_string(initialWhiteTime) + ", \"blackTime\": " + std::to_string(initialBlackTime) + ", \"increment\": " + std::to_string(increment) + "}");
     newConnection->send("{\"board\": \"" + board.getFen() + "\"}");
 
     for (ws::ChessConnection *w_connection : connections) {

@@ -181,11 +181,6 @@ float Engine::negamax(int depth) {
 }
 
 std::string Engine::getBestMove(bool isWhite) {
-
-	
-
-
-	
 	chess::Movelist legalMoves;
 	chess::movegen::legalmoves(legalMoves, board);
 
@@ -196,7 +191,7 @@ std::string Engine::getBestMove(bool isWhite) {
 
 	for (chess::Move move : legalMoves) {
 		board.makeMove(move);
-		float eval = negamax(3) ;
+		float eval = negamax(3) * (isWhite ? -1 : 1);
 		board.unmakeMove(move);
 
 		if (eval > maxEval) {

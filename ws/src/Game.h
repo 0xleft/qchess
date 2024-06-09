@@ -44,22 +44,54 @@ private:
     std::string whiteId = "";
     std::string blackId = "";
     bool privateGame = false;
+
+    std::thread timerThread;
+
+    int initialWhiteTime = 500;
+    int initialBlackTime = 500;
+    int increment = 0;
+
+    std::string reconnectWhiteId = "";
+    std::string reconnectBlackId = "";
+    
     std::vector<std::string> moves;
     std::chrono::system_clock::time_point created = std::chrono::system_clock::now();
     std::chrono::system_clock::time_point lastMove = std::chrono::system_clock::now();
     
-    void createId() {
+    void init() {
         gameId = utils::sha256(std::to_string(rand()) + std::to_string(std::chrono::system_clock::now().time_since_epoch().count()));
         whiteId = utils::sha256(std::to_string(rand())).substr(0, 20);
         blackId = utils::sha256(std::to_string(rand())).substr(0, 20);
+
+        timerThread = std::thread([&]() {
+            while (true) {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                if (state == GameState::IN_PROGRESS) {
+                    if (board.sideToMove() == chess::Color::WHITE) {
+                        initialWhiteTime -= 1.0f;
+                    } else {
+                        initialBlackTime -= 1.0f;
+                    }
+
+                    if (initialWhiteTime <= 0 || initialBlackTime <= 0) {
+                        state = GameState::FINISHED;
+                        for (ws::ChessConnection* connection : connections) {
+                            connection->send("{\"gameOver\": true}");
+                        }
+                    }
+                }
+            }
+        });
+
+        timerThread.detach();
     }
 
 public:
     Game() {
-        createId();
+        init();
     }
     Game(crow::websocket::connection& conn) {
-        createId();
+        init();
         connections.push_back(new ws::ChessConnection(&conn, ws::ConnectionRole::SPECTATOR));
     }
     inline void addConnection(ws::ChessConnection* connection) {
@@ -67,6 +99,35 @@ public:
     }
     inline void removeConnection(ws::ChessConnection* connection) {
         connections.erase(std::remove(connections.begin(), connections.end(), connection), connections.end());
+    }
+    void setInitialTime(int time) {
+        initialWhiteTime = time;
+        initialBlackTime = time;
+    }
+    void setIncrement(int increment) {
+        this->increment = increment;
+    }
+    void incrementTime() {
+        if (board.sideToMove() == chess::Color::WHITE) {
+            initialWhiteTime += increment;
+        } else {
+            initialBlackTime += increment;
+        }
+    }
+    std::string getWhiteReconnectId() {
+        return reconnectWhiteId;
+    }
+    std::string getBlackReconnectId() {
+        return reconnectBlackId;
+    }
+    GameState getGameState() {
+        return state;
+    }
+    int getWhiteTime() {
+        return initialWhiteTime;
+    }
+    int getBlackTime() {
+        return initialBlackTime;
     }
     void handleMove(crow::websocket::connection& connection, crow::json::rvalue json);
     void handleJoin(crow::websocket::connection& connection, crow::json::rvalue json);

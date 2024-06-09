@@ -18,6 +18,7 @@
     "@mui/icons-material": "^5.15.17",
     "@mui/material": "^5.15.17",
     "@mui/material-nextjs": "^5.15.11",
+    "@mui/x-data-grid": "^7.6.2",
     "@prisma/client": "^5.14.0",
     "chess.js": "^1.0.0-beta.8",
     "next": "14.2.3",

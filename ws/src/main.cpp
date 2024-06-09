@@ -7,6 +7,7 @@ int main() {
 	std::cout << "Starting server... :)" << std::endl;
 
 	crow::Crow<> app;
+	// app.loglevel(crow::LogLevel::WARNING);
 
 	std::mutex mtx;
 	std::vector<ws::Game*> games;
@@ -95,6 +96,12 @@ int main() {
 			std::lock_guard<std::mutex> _(mtx);
 			ws::Game* game = new ws::Game();
 			game->setPrivate(req.url_params.get("private") == "true");
+			if (req.url_params.get("time")) {
+				game->setInitialTime(std::stoi(req.url_params.get("time")));
+			}
+			if (req.url_params.get("increment")) {
+				game->setIncrement(std::stoi(req.url_params.get("increment")));
+			}
 			games.push_back(game);
 
 			crow::json::wvalue json({
@@ -111,9 +118,49 @@ int main() {
 			return response;
 		});
 
+	CROW_ROUTE(app, "/ws/public")
+		([&](const crow::request& req) {
+			// get public games 10
+			std::lock_guard<std::mutex> _(mtx);
+			crow::json::wvalue json;
+			
+			int skip = 0;
+			if (req.url_params.get("skip")) {
+				skip = std::stoi(req.url_params.get("skip"));
+			}
+
+			int count = 0;
+			for (ws::Game* game : games) {
+				if (!game->isPrivate() && game->getGameState() == ws::GameState::WAITING) {
+					skip--;
+					if (skip >= 0) {
+						continue;
+					}
+					count++;
+					if (count > 10) {
+						break;
+					}
+					crow::json::wvalue gameJson({
+						{"id", game->getGameId()},
+						{"whiteId", game->getWhiteId()},
+						{"blackId", game->getBlackId()},
+						{"whiteTime", game->getWhiteTime()},
+						{"blackTime", game->getBlackTime()},
+						{"created", game->getCreated()}
+					});
+					json[std::to_string(count)] = gameJson.dump();
+				}
+			}
+
+			crow::response response;
+			response.set_header("Content-Type", "application/json");
+			response.write(json.dump());
+			response.set_header("Access-Control-Allow-Origin", "*"); // for development purposes only
+			return response;
+		});
+
 	CROW_ROUTE(app, "/ws/game")
 		([&](const crow::request& req) {
-
 			if (!req.url_params.get("id")) {
 				crow::response response;
 				response.set_header("Content-Type", "application/json");
@@ -135,7 +182,9 @@ int main() {
 			crow::json::wvalue json({
 				// {"id", game->getGameId()},
 				{"moves", game->getMovesString()},
-				{"created", game->getCreated()}
+				{"created", game->getCreated()},
+				{"whiteTime", game->getWhiteTime()},
+				{"blackTime", game->getBlackTime()},
 			});
 
 			delete game;

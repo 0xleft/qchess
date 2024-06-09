@@ -48,8 +48,8 @@ export default function Navbar() {
                         Play
                     </Link>
 
-                    <Link href='/analysis' className="text-xl font-thin pr-5 hover:text-[#2196f3]">
-                        Analyze
+                    <Link href='/view' className="text-xl font-thin pr-5 hover:text-[#2196f3]">
+                        View
                     </Link>
 				</div>
 				<div className='md:flex items-center space-x-2 flex-row flex'>
