@@ -95,7 +95,8 @@ int main() {
 		([&](const crow::request& req) {
 			std::lock_guard<std::mutex> _(mtx);
 			ws::Game* game = new ws::Game();
-			game->setPrivate(req.url_params.get("private") == "true");
+			std::cout << (std::string(req.url_params.get("private")) == "true") << std::endl;
+			game->setPrivate(std::string(req.url_params.get("private")) == "true");
 			if (req.url_params.get("time")) {
 				game->setInitialTime(std::stoi(req.url_params.get("time")));
 			}
@@ -120,7 +121,6 @@ int main() {
 
 	CROW_ROUTE(app, "/ws/public")
 		([&](const crow::request& req) {
-			// get public games 10
 			std::lock_guard<std::mutex> _(mtx);
 			crow::json::wvalue json;
 			
@@ -130,7 +130,9 @@ int main() {
 			}
 
 			int count = 0;
-			for (ws::Game* game : games) {
+
+			for (int i = games.size() - 1; i >= 0; i--) {
+				ws::Game* game = games[i];
 				if (!game->isPrivate() && game->getGameState() == ws::GameState::WAITING) {
 					skip--;
 					if (skip >= 0) {
@@ -142,11 +144,12 @@ int main() {
 					}
 					crow::json::wvalue gameJson({
 						{"id", game->getGameId()},
-						{"whiteId", game->getWhiteId()},
-						{"blackId", game->getBlackId()},
+						{"whiteId", game->hasWhiteJoinedGame() ? "" : game->getWhiteId()},
+						{"blackId", game->hasBlackJoinedGame() ? "" : game->getBlackId()},
 						{"whiteTime", game->getWhiteTime()},
 						{"blackTime", game->getBlackTime()},
-						{"created", game->getCreated()}
+						{"created", game->getCreated()},
+						{"increment", game->getIncrement()}
 					});
 					json[std::to_string(count)] = gameJson.dump();
 				}

@@ -51,6 +51,9 @@ private:
     int initialBlackTime = 500;
     int increment = 0;
 
+    bool hasWhiteJoined = false;
+    bool hasBlackJoined = false;
+
     std::string reconnectWhiteId = "";
     std::string reconnectBlackId = "";
     
@@ -62,6 +65,8 @@ private:
         gameId = utils::sha256(std::to_string(rand()) + std::to_string(std::chrono::system_clock::now().time_since_epoch().count()));
         whiteId = utils::sha256(std::to_string(rand())).substr(0, 20);
         blackId = utils::sha256(std::to_string(rand())).substr(0, 20);
+        reconnectWhiteId = utils::sha256(std::to_string(rand())).substr(0, 20);
+        reconnectBlackId = utils::sha256(std::to_string(rand())).substr(0, 20);
 
         timerThread = std::thread([&]() {
             while (true) {
@@ -106,6 +111,21 @@ public:
     }
     void setIncrement(int increment) {
         this->increment = increment;
+    }
+    int getIncrement() {
+        return increment;
+    }
+    bool hasWhiteJoinedGame() {
+        return hasWhiteJoined;
+    }
+    bool hasBlackJoinedGame() {
+        return hasBlackJoined;
+    }
+    void setWhiteJoinedGame(bool joined) {
+        hasWhiteJoined = joined;
+    }
+    void setBlackJoinedGame(bool joined) {
+        hasBlackJoined = joined;
     }
     void incrementTime() {
         if (board.sideToMove() == chess::Color::WHITE) {

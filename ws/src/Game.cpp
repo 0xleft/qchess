@@ -82,14 +82,35 @@ void ws::Game::handleJoin(crow::websocket::connection &connection, crow::json::r
 
     bool spectator = false;
 
+
     if (joinId == whiteId) {
+        if (hasWhiteJoined && json["reconnectId"].s() != reconnectWhiteId) {
+            newConnection->send("{\"error\": \"Incorrect reconnectId\"}");
+            delete newConnection;
+            return;
+        }
+        if (!hasWhiteJoined) {
+            newConnection->send("{\"reconnectId\": \"" + reconnectWhiteId + "\"}");
+        }
+
         newConnection->setColor(chess::Color::WHITE);
         newConnection->setRole(ws::ConnectionRole::PLAYER);
         connections.push_back(newConnection);
+        hasWhiteJoined = true;
     } else if (joinId == blackId) {
+        if (hasBlackJoined && json["reconnectId"].s() != reconnectBlackId) {
+            newConnection->send("{\"error\": \"Incorrect reconnectId\"}");
+            delete newConnection;
+            return;
+        }
+        if (!hasBlackJoined) {
+            newConnection->send("{\"reconnectId\": \"" + reconnectBlackId + "\"}");
+        }
+
         newConnection->setColor(chess::Color::BLACK);
         newConnection->setRole(ws::ConnectionRole::PLAYER);
         connections.push_back(newConnection);
+        hasBlackJoined = true;
     } else {
         spectator = true;
         connections.push_back(newConnection);
