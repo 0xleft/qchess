@@ -28,7 +28,7 @@ function promotionMenu({ onSelect, color, position, move, size }) {
 	);
 }
 
-export default function Chessboard({ boardState, role, color, playing, flipped, onMove }) {
+export default function Chessboard({ boardState, role, color, playing, flipped, onMove = () => {}, onSelect = () => {} }) {
 	const [size, setSize] = useState(100);
 
 	function resize() {
@@ -114,6 +114,7 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 
 									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])) {
 										setHoverSquare(SQUARES[8 * (7 - i) + (7 - j)]);
+										onSelect(SQUARES[8 * (7 - i) + (7 - j)]);
 									}
 								}}
 
@@ -166,6 +167,7 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 
 									if (boardState.get(SQUARES[8 * i + j])) {
 										setHoverSquare(SQUARES[8 * i + j]);
+										onSelect(SQUARES[8 * i + j]);
 									}
 								}}
 
