@@ -1,6 +1,7 @@
 import Chessboard from "@/components/chess/Chessboard";
 import { ArrowRight, ArrowRightAlt, Sports, SportsEsports } from "@mui/icons-material";
 import { Button } from "@mui/material";
+import { tsParticles } from "@tsparticles/engine";
 import { Chess } from "chess.js";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -18,10 +19,11 @@ export default function Index() {
 			console.error(err);
 		});
 	}
+	  
 
 	return (
 		<>
-			<div className="h-[50vh] md:h-[70vh] flex lg:flex-row flex-col text-center items-center justify-center gap-2 lg:gap-20">
+			<div className="h-[50vh] md:h-[70vh] lg:flex-row flex-col text-center items-center justify-center gap-2 lg:gap-20 mt-10 lg:mt-20 hidden md:flex">
 				<div className="flex flex-col items-center justify-center gap-2 lg:gap-5">
 					<h1 className="text-4xl md:text-6xl font-bold text-center w-full">
 						Play chess
