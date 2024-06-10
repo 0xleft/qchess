@@ -28,7 +28,30 @@ function promotionMenu({ onSelect, color, position, move, size }) {
 	);
 }
 
-export default function Chessboard({ size = 50, boardState, role, color, playing, flipped, onMove }) {
+export default function Chessboard({ boardState, role, color, playing, flipped, onMove }) {
+	const [size, setSize] = useState(100);
+
+	function resize() {
+		if (window.innerWidth < 600) {
+			setSize(window.innerWidth / 8);
+		}
+		if (window.innerWidth >= 600 && window.innerWidth < 960) {
+			setSize(window.innerWidth / 10);
+		}
+		if (window.innerWidth > 960) {
+			setSize(100);
+		}
+	}
+
+	useEffect(() => {
+		if (typeof window !== 'undefined') {
+			resize();
+			window.addEventListener('resize', () => {
+				resize();
+			});
+		}
+	}, []);
+
 	const [hoverSquare, setHoverSquare] = useState(null);
 	const [selectingPromotion, setSelectingPromotion] = useState(false);
 	const [lastMove, setLastMove] = useState(null);
