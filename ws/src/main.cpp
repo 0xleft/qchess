@@ -95,7 +95,6 @@ int main() {
 		([&](const crow::request& req) {
 			std::lock_guard<std::mutex> _(mtx);
 			ws::Game* game = new ws::Game();
-			std::cout << (std::string(req.url_params.get("private")) == "true") << std::endl;
 			game->setPrivate(std::string(req.url_params.get("private")) == "true");
 			if (req.url_params.get("time")) {
 				game->setInitialTime(std::stoi(req.url_params.get("time")));

@@ -87,16 +87,12 @@ export default function PlayIndex() {
 		fetch(`http://localhost:2425/ws/create?private=${isPrivate}&color=${color}&random=${color === 'random'}&time=${time * 60}&increment=${increment}`)
 		.then(res => res.json())
 		.then(data => {
-			if (!isPrivate) {
-				router.push(`/play/${data.id}/${data.whiteId}`);				
-			} else {
-				let tempColor = color;
-				if (tempColor === 'random') {
-					const random = Math.floor(Math.random() * 2);
-					tempColor = random === 0 ? 'white' : 'black';
-				}
-				router.push(`/play/${data.id}/${data[tempColor + 'Id']}?otherId=${data[tempColor === 'white' ? 'blackId' : 'whiteId']}`);
+			let tempColor = color;
+			if (tempColor === 'random') {
+				const random = Math.floor(Math.random() * 2);
+				tempColor = random === 0 ? 'white' : 'black';
 			}
+			router.push(`/play/${data.id}/${data[tempColor + 'Id']}?otherId=${data[tempColor === 'white' ? 'blackId' : 'whiteId']}`);
 		}).catch(err => {
 			console.error(err);
 		});

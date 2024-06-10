@@ -10,7 +10,7 @@ export default function RootLayout({ children }) {
                 <Navbar />
             </Hidden>
 
-            <main className="overflow-hidden md:overflow-visible">
+            <main className="overflow-hidden md:overflow-visible mt-10">
                 <>
                     <NextNProgress color={'#2196f3'}
                         startPosition={0.3} stopDelayMs={200} height={3} showOnShallow={true} options={

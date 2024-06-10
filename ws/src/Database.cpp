@@ -5,12 +5,12 @@ ws::Database::Database() {
 }
 
 void ws::Database::init() {
-    dbConnection->prepare("insert_game", "INSERT INTO games (game_id, moves) VALUES ($1, $2)");
+    dbConnection->prepare("insert_game", "INSERT INTO games (game_id, moves, winner) VALUES ($1, $2, $3)");
     dbConnection->prepare("select_game", "SELECT * FROM games WHERE game_id = $1");
 }
 
 void ws::Database::saveGame(ws::Game *game) {
-    tao::pq::result result = dbConnection->execute("insert_game", game->getGameId(), game->getMovesString());
+    tao::pq::result result = dbConnection->execute("insert_game", game->getGameId(), game->getMovesString(), game->getWinner());
     if (result.rows_affected() != 1) {
         throw std::runtime_error("Failed to save game");
     }
@@ -31,6 +31,7 @@ ws::Game* ws::Database::loadGame(std::string gameId) {
     }
 
     ws::Game* game = new ws::Game();
+    game->setWinner(result[0]["winner"].as<std::string>());
     game->setGameId(result[0]["game_id"].as<std::string>());
     game->setMovesFromString(result[0]["moves"].as<std::string>());
     game->setCreated(result[0]["created_at"].as<std::string>());

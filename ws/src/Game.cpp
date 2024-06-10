@@ -29,6 +29,15 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
 
     std::string move = json["move"].s();
 
+    if (move == "resign") {
+        winner = conn->getColor() == chess::Color::WHITE ? "black" : "white";
+        state = ws::GameState::FINISHED;
+        for (ws::ChessConnection *connection : connections) {
+            connection->send("{\"gameOver\": true}");
+        }
+        return;
+    }
+
     chess::Movelist movelist;
     chess::movegen::legalmoves(movelist, board);
 
@@ -58,9 +67,11 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
     }
 
     if (board.isGameOver().first != chess::GameResultReason::NONE) {
+        winner = board.isGameOver().first == chess::GameResultReason::CHECKMATE ? (board.sideToMove() == chess::Color::WHITE ? "black" : "white") : "draw";
         state = ws::GameState::FINISHED;
         for (ws::ChessConnection *connection : connections) {
             connection->send("{\"gameOver\": true}");
+            connection->send("{\"winner\": \"" + winner + "\"}");
         }
     }
 }
@@ -81,7 +92,6 @@ void ws::Game::handleJoin(crow::websocket::connection &connection, crow::json::r
     ws::ChessConnection *newConnection = new ws::ChessConnection(&connection, ws::ConnectionRole::SPECTATOR);
 
     bool spectator = false;
-
 
     if (joinId == whiteId) {
         if (hasWhiteJoined && json["reconnectId"].s() != reconnectWhiteId) {
@@ -118,10 +128,8 @@ void ws::Game::handleJoin(crow::websocket::connection &connection, crow::json::r
 
     for (ws::ChessConnection *connection : connections) {
         if (connection->getColor() == newConnection->getColor() && connection != newConnection) {
-            connection->send("{\"error\": \"Player of that color already connected\"}");
-            connections.pop_back();
-            delete newConnection;
-            return;
+            newConnection->setRole(ws::ConnectionRole::SPECTATOR);
+            break;
         }
     }
 

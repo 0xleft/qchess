@@ -81,7 +81,7 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 	}, []);
 
 	return (
-		<>
+		<div>
 			<div className={"fixed transform " + (hoverSquare ? 'block' : 'hidden')} style={{ top: mousePosition.y, left: mousePosition.x, zIndex: 1000, pointerEvents: 'none', transform: 'translate(-50%, -50%)'
 			}}
 			>
@@ -138,8 +138,8 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 									<Piece
 										type={boardState.get(SQUARES[8 * (7 - i) + (7 - j)]).type}
 										color={boardState.get(SQUARES[8 * (7 - i) + (7 - j)]).color}
-										width={50}
-										height={50}
+										width={size}
+										height={size}
 										props={{ style: { pointerEvents: 'none', userSelect: 'none' } }}
 									/>
 								) : null}
@@ -201,6 +201,6 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 			}
 
 			{selectingPromotion ? promotionMenu({ onSelect: onSelectPromotion, color: color, position: promotionMousePosition, move: lastMove, size: size }) : null}
-		</>
+		</div>
 	);
 };

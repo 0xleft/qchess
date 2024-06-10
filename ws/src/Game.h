@@ -47,8 +47,8 @@ private:
 
     std::thread timerThread;
 
-    int initialWhiteTime = 500;
-    int initialBlackTime = 500;
+    int initialWhiteTime = 300;
+    int initialBlackTime = 300;
     int increment = 0;
 
     bool hasWhiteJoined = false;
@@ -57,6 +57,8 @@ private:
     std::string reconnectWhiteId = "";
     std::string reconnectBlackId = "";
     
+    std::string winner = "";
+
     std::vector<std::string> moves;
     std::chrono::system_clock::time_point created = std::chrono::system_clock::now();
     std::chrono::system_clock::time_point lastMove = std::chrono::system_clock::now();
@@ -78,10 +80,16 @@ private:
                         initialBlackTime -= 1.0f;
                     }
 
+                    for (ws::ChessConnection* connection : connections) {
+                        connection->send("{\"whiteTime\": " + std::to_string(initialWhiteTime) + ", \"blackTime\": " + std::to_string(initialBlackTime) + "}");
+                    }
+
                     if (initialWhiteTime <= 0 || initialBlackTime <= 0) {
+                        winner = initialWhiteTime <= 0 ? "black" : "white";
                         state = GameState::FINISHED;
                         for (ws::ChessConnection* connection : connections) {
                             connection->send("{\"gameOver\": true}");
+                            connection->send("{\"winner\": \"" + winner + "\"}");
                         }
                     }
                 }
@@ -108,6 +116,12 @@ public:
     void setInitialTime(int time) {
         initialWhiteTime = time;
         initialBlackTime = time;
+    }
+    std::string getWinner() {
+        return winner;
+    }
+    void setWinner(std::string winner) {
+        this->winner = winner;
     }
     void setIncrement(int increment) {
         this->increment = increment;

@@ -2,5 +2,6 @@ CREATE TABLE IF NOT EXISTS games (
     id SERIAL PRIMARY KEY,
     game_id TEXT NOT NULL,
     moves TEXT NOT NULL,
+    winner TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
