@@ -173,6 +173,13 @@ export default function PlayIndex() {
 									</Button>
 								</Link>
 							</TableCell>
+							<TableCell component="th" scope="row">
+								<Link href={`/play/${row.id}/spectate`}>
+									<Button variant='contained' color={row.whiteId === "" ? 'primary' : 'info'}>
+										Spectate
+									</Button>
+								</Link>
+							</TableCell>
 							<TableCell align="right">{(row.whiteTime / 60).toFixed(0)}min + {row.increment}s</TableCell>
 							<TableCell align="right">{row.created}</TableCell>
 							</TableRow>

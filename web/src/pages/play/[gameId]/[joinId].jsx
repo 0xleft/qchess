@@ -55,15 +55,16 @@ export default function PlayID() {
         if (move.promotion === undefined) {
             move.promotion = "";
 		}
+        if (boardState.fen() !== new Chess().fen()) {
+            if (color === Color.WHITE) {
+                setWhiteTime(whiteTime + increments);
+            } else {
+                setBlackTime(blackTime + increments);
+            }
+        }
         boardState.move(move);
 		sendMove(`${move.from}${move.to}${move.promotion}`);
 		setBoardState(new Chess(boardState.fen()));
-
-        if (color === Color.WHITE) {
-            setWhiteTime(whiteTime + increments);
-        } else {
-            setBlackTime(blackTime + increments);
-        }
     }
 
     function connectToGame() {
@@ -173,49 +174,49 @@ export default function PlayID() {
             </Backdrop>
 
             <Hidden lgDown>
-                
-
                 <Container className='flex flex-row gap-2'>
                     <Chessboard id={gameId} joinId={joinId} boardState={boardState} role={role} color={color} playing={winner === null} flipped={flipped} onMove={onMove} />
                     <div className='w-full flex flex-col justify-between'>
                         <Clock time={color === Color.BLACK ? whiteTime : blackTime} color={color === Color.BLACK ? 'white' : 'black'} dimmed={color === Color.BLACK ? boardState?.turn() === 'b' : boardState?.turn() === 'w'} />
 
-                        <div>
-                            <Paper className='p-4 flex flex-col gap-4'>
-                                <div className='flex flex-row gap-2'>
-                                    <Button variant='text' color='primary' className='w-full' onClick={() => {
-                                        client.send(JSON.stringify({
-                                            'id': gameId,
-                                            'move': 'resign',
-                                            'type': 'move'
-                                        }).toString());
-                                    }}>
-                                        <Flag /> Resign
-                                    </Button>
-                                    <Button variant='text' color={offeredDraw ? 'success' : 'primary'} className='w-full' onClick={() => {
-                                        client.send(JSON.stringify({
-                                            'id': gameId,
-                                            'move': 'draw',
-                                            'type': 'move'
-                                        }).toString());
-                                    }}>
-                                        {
-                                            offeredDraw ? <><Done /> Accept draw</> : <><Balance /> Offer draw</>
-                                        }
-                                    </Button>
-                                </div>
-
-                                {
-                                    otherId && (
+                        {role === Role.PLAYER && (
+                            <div>
+                                <Paper className='p-4 flex flex-col gap-4'>
+                                    <div className='flex flex-row gap-2'>
                                         <Button variant='text' color='primary' className='w-full' onClick={() => {
-                                            navigator.clipboard.writeText(`${window.location.origin}/play/${gameId}/${otherId}`);
+                                            client.send(JSON.stringify({
+                                                'id': gameId,
+                                                'move': 'resign',
+                                                'type': 'move'
+                                            }).toString());
                                         }}>
-                                            <ContentCopy /> Copy link
+                                            <Flag /> Resign
                                         </Button>
-                                    )
-                                }
-                            </Paper>
-                        </div>
+                                        <Button variant='text' color={offeredDraw ? 'success' : 'primary'} className='w-full' onClick={() => {
+                                            client.send(JSON.stringify({
+                                                'id': gameId,
+                                                'move': 'draw',
+                                                'type': 'move'
+                                            }).toString());
+                                        }}>
+                                            {
+                                                offeredDraw ? <><Done /> Accept draw</> : <><Balance /> Offer draw</>
+                                            }
+                                        </Button>
+                                    </div>
+
+                                    {
+                                        otherId && (
+                                            <Button variant='text' color='primary' className='w-full' onClick={() => {
+                                                navigator.clipboard.writeText(`${window.location.origin}/play/${gameId}/${otherId}`);
+                                            }}>
+                                                <ContentCopy /> Copy link
+                                            </Button>
+                                        )
+                                    }
+                                </Paper>
+                            </div>
+                        )}
 
                         <Clock time={color === Color.BLACK ? blackTime : whiteTime} color={color === Color.BLACK ? 'black' : 'white'} dimmed={color === Color.BLACK ? boardState?.turn() === 'w' : boardState?.turn() === 'b'} />
                     </div>
@@ -235,7 +236,7 @@ export default function PlayID() {
                         </Button>
 
                         {
-                            mobileMenu && (
+                            mobileMenu && role === Role.PLAYER && (
                                 <Paper className='fixed transform p-4 rounded-lg shadow-lg flex flex-col gap-4'>
                                     <Button variant='text' color='primary' className='w-full' onClick={() => {
                                         client.send(JSON.stringify({
