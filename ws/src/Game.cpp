@@ -17,11 +17,6 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
         return;
     }
 
-    if (board.sideToMove() != conn->getColor()) {
-        conn->send("{\"error\": \"Not your turn\", \"board\": \"" + board.getFen() + "\"}");
-        return;
-    }
-
     if (!json.has("move")) {
         connection.send_text("{\"error\": \"Invalid move\", \"board\": \"" + board.getFen() + "\"}");
         return;
@@ -29,12 +24,52 @@ void ws::Game::handleMove(crow::websocket::connection &connection, crow::json::r
 
     std::string move = json["move"].s();
 
-    if (move == "resign") {
+    if (std::string(move) == "resign") {
         winner = conn->getColor() == chess::Color::WHITE ? "black" : "white";
         state = ws::GameState::FINISHED;
         for (ws::ChessConnection *connection : connections) {
             connection->send("{\"gameOver\": true}");
+            connection->send("{\"winner\": \"" + winner + "\"}");
         }
+        return;
+    }
+
+    if (std::string(move) == "draw") {
+        if (conn->getColor() == chess::Color::WHITE) {
+            whiteOfferedDraw = true;
+
+            if (blackOfferedDraw) {
+                winner = "draw";
+                state = ws::GameState::FINISHED;
+                for (ws::ChessConnection *connection : connections) {
+                    connection->send("{\"gameOver\": true}");
+                    connection->send("{\"winner\": \"draw\"}");
+                }
+            }
+        } else {
+            blackOfferedDraw = true;
+
+            if (whiteOfferedDraw) {
+                winner = "draw";
+                state = ws::GameState::FINISHED;
+                for (ws::ChessConnection *connection : connections) {
+                    connection->send("{\"gameOver\": true}");
+                    connection->send("{\"winner\": \"draw\"}");
+                }
+            }
+        }
+
+        lastDrawOffer = std::chrono::system_clock::now();
+
+        for (ws::ChessConnection *connection : connections) {
+            connection->send("{\"drawOffered\": true}");
+        }
+
+        return;
+    }
+
+    if (board.sideToMove() != conn->getColor()) {
+        conn->send("{\"error\": \"Not your turn\", \"board\": \"" + board.getFen() + "\"}");
         return;
     }
 
@@ -135,10 +170,6 @@ void ws::Game::handleJoin(crow::websocket::connection &connection, crow::json::r
 
     newConnection->send("{\"gameId\": \"" + gameId + "\", \"color\": \"" + (newConnection->getColor() == chess::Color::BLACK ? "black" : "white") + "\", \"role\": \"" + (newConnection->getRole() == ws::ConnectionRole::PLAYER ? "player" : "spectator") + "\", \"whiteTime\": " + std::to_string(initialWhiteTime) + ", \"blackTime\": " + std::to_string(initialBlackTime) + ", \"increment\": " + std::to_string(increment) + "}");
     newConnection->send("{\"board\": \"" + board.getFen() + "\"}");
-
-    for (ws::ChessConnection *w_connection : connections) {
-        w_connection->send("{\"playing\": true}");
-    }
 
     if (getNumPlayers() == 2 && !spectator && state == ws::GameState::WAITING) {
         state = ws::GameState::IN_PROGRESS;

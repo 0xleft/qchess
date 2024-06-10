@@ -11,28 +11,6 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import Drawer from '@mui/material/Drawer';
 
 export default function Navbar() {
-    const [mobileDrawerOpen, setMobileDrawerOpen] = React.useState(false);
-
-    const toggleMobileDrawer = (newOpen) => () => {
-        setMobileDrawerOpen(newOpen);
-    };
-
-    const MobileDrawerList = (
-        <Box sx={{ width: 250 }} role="presentation" onClick={toggleMobileDrawer(false)}>
-            <List>
-                <ListItemButton href='/auth/login'>
-                    Login
-                </ListItemButton>
-                <ListItemButton href='/auth/register'>
-                    Register
-                </ListItemButton>
-            </List>
-            <Divider />
-            <List>
-            </List>
-        </Box>
-    );
-    
 	return (
         <>
             <header className='text-primary body-font shadow'>
@@ -48,19 +26,12 @@ export default function Navbar() {
                         Play
                     </Link>
 
-                    <Link href='/view' className="text-xl font-thin pr-5 hover:text-[#2196f3]">
-                        View
+                    <Link href='/explore' className="text-xl font-thin pr-5 hover:text-[#2196f3]">
+                        Explore
                     </Link>
 				</div>
 				<div className='md:flex items-center space-x-2 flex-row flex'>
-                    <Button onClick={toggleMobileDrawer(true)} className='block md:hidden' variant='contained' color='primary'
-                    >
-                        More
-                    </Button>
                     <div className='hidden md:flex items-center space-x-2'>
-                        <Drawer open={mobileDrawerOpen} onClose={toggleMobileDrawer(false)}>
-                            {MobileDrawerList}
-                        </Drawer>
                         <Button variant='contained' color='primary' href='/auth/login'>
                             Login
                         </Button>

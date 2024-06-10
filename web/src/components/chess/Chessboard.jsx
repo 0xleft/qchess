@@ -38,8 +38,8 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 		if (window.innerWidth >= 600 && window.innerWidth < 960) {
 			setSize(window.innerWidth / 10);
 		}
-		if (window.innerWidth > 960) {
-			setSize(100);
+		if (window.innerWidth > 960 && window.innerWidth < 1200) {
+			setSize(80);
 		}
 	}
 
@@ -71,11 +71,13 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 	
 		if (typeof window !== 'undefined') {
 			window.addEventListener('mouseup', handleMouseUp);
+			window.addEventListener('touchend', handleMouseUp);
 		}
 	
 		return () => {
 			if (typeof window !== 'undefined') {
 				window.removeEventListener('mouseup', handleMouseUp);
+				window.removeEventListener('touchend', handleMouseUp);
 			}
 		};
 	}, []);

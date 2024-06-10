@@ -59,6 +59,11 @@ private:
     
     std::string winner = "";
 
+    bool whiteOfferedDraw = false;
+    bool blackOfferedDraw = false;
+
+    std::chrono::system_clock::time_point lastDrawOffer = std::chrono::system_clock::now();
+
     std::vector<std::string> moves;
     std::chrono::system_clock::time_point created = std::chrono::system_clock::now();
     std::chrono::system_clock::time_point lastMove = std::chrono::system_clock::now();
@@ -74,6 +79,16 @@ private:
             while (true) {
                 std::this_thread::sleep_for(std::chrono::seconds(1));
                 if (state == GameState::IN_PROGRESS) {
+
+                    if (std::chrono::system_clock::now() - lastDrawOffer > std::chrono::seconds(10) && (whiteOfferedDraw || blackOfferedDraw)) {
+                        whiteOfferedDraw = false;
+                        blackOfferedDraw = false;
+
+                        for (ws::ChessConnection* connection : connections) {
+                            connection->send("{\"drawOffered\": false}");
+                        }
+                    }
+
                     if (board.sideToMove() == chess::Color::WHITE) {
                         initialWhiteTime -= 1.0f;
                     } else {
@@ -84,7 +99,7 @@ private:
                         connection->send("{\"whiteTime\": " + std::to_string(initialWhiteTime) + ", \"blackTime\": " + std::to_string(initialBlackTime) + "}");
                     }
 
-                    if (initialWhiteTime <= 0 || initialBlackTime <= 0) {
+                    if (initialWhiteTime < 0 || initialBlackTime < 0) {
                         winner = initialWhiteTime <= 0 ? "black" : "white";
                         state = GameState::FINISHED;
                         for (ws::ChessConnection* connection : connections) {
@@ -112,6 +127,24 @@ public:
     }
     inline void removeConnection(ws::ChessConnection* connection) {
         connections.erase(std::remove(connections.begin(), connections.end(), connection), connections.end());
+    }
+    bool isWhiteOfferingDraw() {
+        return whiteOfferedDraw;
+    }
+    bool isBlackOfferingDraw() {
+        return blackOfferedDraw;
+    }
+    void setWhiteOfferingDraw(bool offering) {
+        whiteOfferedDraw = offering;
+    }
+    void setBlackOfferingDraw(bool offering) {
+        blackOfferedDraw = offering;
+    }
+    void setLastDrawOffer(std::chrono::system_clock::time_point time) {
+        lastDrawOffer = time;
+    }
+    std::chrono::system_clock::time_point getLastDrawOffer() {
+        return lastDrawOffer;
     }
     void setInitialTime(int time) {
         initialWhiteTime = time;
