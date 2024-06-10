@@ -1,4 +1,3 @@
-import Chessboard from '@/components/chess/AnalysisChessboard';
 import { Box, Button, Container, Divider, FormControlLabel, Hidden, Radio, RadioGroup, Select, Slider, Switch } from '@mui/material';
 import { Chess } from 'chess.js';
 import Link from 'next/link';
@@ -17,10 +16,6 @@ const timeMarks = [
 	{
 	  value: 1,
 	  label: '1min',
-	},
-	{
-		value: 5,
-		label: '5mins',
 	},
 	{
 	  value: 20,
@@ -92,10 +87,15 @@ export default function PlayIndex() {
 		fetch(`http://localhost:2425/ws/create?private=${isPrivate}&color=${color}&random=${color === 'random'}&time=${time * 60}&increment=${increment}`)
 		.then(res => res.json())
 		.then(data => {
-			if (color === 'random') {
+			if (!isPrivate) {
 				router.push(`/play/${data.id}/${data.whiteId}`);				
 			} else {
-				router.push(`/play/${data.id}/${data[color + 'Id']}?otherId=${data[color === 'white' ? 'blackId' : 'whiteId']}`);
+				let tempColor = color;
+				if (tempColor === 'random') {
+					const random = Math.floor(Math.random() * 2);
+					tempColor = random === 0 ? 'white' : 'black';
+				}
+				router.push(`/play/${data.id}/${data[tempColor + 'Id']}?otherId=${data[tempColor === 'white' ? 'blackId' : 'whiteId']}`);
 			}
 		}).catch(err => {
 			console.error(err);
@@ -104,7 +104,7 @@ export default function PlayIndex() {
 
 	return (
 		<>
-			<Container maxWidth='md' className='mt-5'>
+			<Container maxWidth='md' className='mt-5 mb-20'> {/* big margin at bottom for phone screens */}
 				<Box className='flex justify-between items-center'>
 					<Button variant='contained' color='primary' className='w-full' onClick={createGame}>
 						Create
@@ -159,6 +159,11 @@ export default function PlayIndex() {
 				<TableContainer component={Paper}>
 					<Table aria-label="Avaliable public games">
 						<TableBody>
+						{publicGames.length === 0 && (
+							<TableRow>
+								<TableCell colSpan={4} align='center'>There are no public games at this time :(</TableCell>
+							</TableRow>
+						)}
 						{Object.values(publicGames).map((row) => (
 							<TableRow
 							className='h-10'
@@ -172,7 +177,6 @@ export default function PlayIndex() {
 									</Button>
 								</Link>
 							</TableCell>
-							<TableCell>{row.random}</TableCell>
 							<TableCell align="right">{(row.whiteTime / 60).toFixed(0)}min + {row.increment}s</TableCell>
 							<TableCell align="right">{row.created}</TableCell>
 							</TableRow>

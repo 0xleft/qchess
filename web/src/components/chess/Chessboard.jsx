@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 import Piece from "./Piece";
 import useMousePosition from "../hooks/useMousePosition";
 
-const Role = {
+export const Role = {
 	SPECTATOR: 'spectator',
-	PLAYER: 'player'
+	PLAYER: 'player',
 };
 
-const Color = {
+export const Color = {
 	WHITE: 'w',
-	BLACK: 'b'
+	BLACK: 'b',
+	ALL: 'a',
 };
 
 function promotionMenu({ onSelect, color, position, move, size }) {
@@ -27,10 +28,8 @@ function promotionMenu({ onSelect, color, position, move, size }) {
 	);
 }
 
-export default function Chessboard({ onMove, boardState, className = "", size = 50 }) {
-
+export default function Chessboard({ size = 50, boardState, role, color, playing, flipped, onMove }) {
 	const [hoverSquare, setHoverSquare] = useState(null);
-	const [flipped, setFlipped] = useState(false)
 	const [selectingPromotion, setSelectingPromotion] = useState(false);
 	const [lastMove, setLastMove] = useState(null);
 	const [promotionMousePosition, setPromotionMousePosition] = useState(null);
@@ -38,7 +37,7 @@ export default function Chessboard({ onMove, boardState, className = "", size = 
 	const mousePosition = useMousePosition({ includeTouch: true });
 
 	function onSelectPromotion(piece, move) {
-        onMove({ from: move.from, to: move.to, promotion: piece })
+		onMove({ from: move.from, to: move.to, promotion: piece });
 		setSelectingPromotion(false);
 	};
 
@@ -59,7 +58,7 @@ export default function Chessboard({ onMove, boardState, className = "", size = 
 	}, []);
 
 	return (
-		<div className={className}>
+		<>
 			<div className={"fixed transform " + (hoverSquare ? 'block' : 'hidden')} style={{ top: mousePosition.y, left: mousePosition.x, zIndex: 1000, pointerEvents: 'none', transform: 'translate(-50%, -50%)'
 			}}
 			>
@@ -75,7 +74,7 @@ export default function Chessboard({ onMove, boardState, className = "", size = 
 
 			{flipped ?
 				Array.from({ length: 8 }).map((_, i) => (
-					<div key={i} className="flex flex-row select-none min-w-min" style={{ height: size }}>
+					<div key={i} className="flex flex-row select-none" style={{ height: size }}>
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'}`} style={{ width: size, height: size }}
 								onMouseDown={() => {
@@ -83,7 +82,10 @@ export default function Chessboard({ onMove, boardState, className = "", size = 
 										setSelectingPromotion(false);
 										return;
 									};
+									if (!playing) return;
 									if (!boardState) return;
+									if (role === Role.SPECTATOR) return;
+									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])?.color !== color && !color === Color.ALL) return;
 
 									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])) {
 										setHoverSquare(SQUARES[8 * (7 - i) + (7 - j)]);
@@ -102,7 +104,7 @@ export default function Chessboard({ onMove, boardState, className = "", size = 
 												return;
 											}
 
-                                            onMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] })
+											onMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
 										}
 										setHoverSquare(null);
 									}
@@ -124,7 +126,7 @@ export default function Chessboard({ onMove, boardState, className = "", size = 
 				))
 			:
 				Array.from({ length: 8 }).map((_, i) => (
-					<div key={i} className="flex flex-row select-none min-w-min" style={{ height: size }}>
+					<div key={i} className="flex flex-row select-none" style={{ height: size }}>
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'}`} style={{ width: size, height: size }}
 								onMouseDown={() => {
@@ -132,7 +134,10 @@ export default function Chessboard({ onMove, boardState, className = "", size = 
 										setSelectingPromotion(false);
 										return;
 									};
+									if (!playing) return;
 									if (!boardState) return;
+									if (role === Role.SPECTATOR) return;
+									if (boardState.get(SQUARES[8 * i + j])?.color !== color && !color === Color.ALL) return;
 
 									if (boardState.get(SQUARES[8 * i + j])) {
 										setHoverSquare(SQUARES[8 * i + j]);
@@ -151,7 +156,7 @@ export default function Chessboard({ onMove, boardState, className = "", size = 
 												return;
 											}
 
-                                            onMove({ from: hoverSquare, to: SQUARES[8 * i + j] })
+											onMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
 										}
 										setHoverSquare(null);
 									}
@@ -172,7 +177,7 @@ export default function Chessboard({ onMove, boardState, className = "", size = 
 				))
 			}
 
-			{selectingPromotion ? promotionMenu({ onSelect: onSelectPromotion, color: boardState.get(lastMove.from).color, position: promotionMousePosition, move: lastMove, size: size }) : null}
-		</div>
+			{selectingPromotion ? promotionMenu({ onSelect: onSelectPromotion, color: color, position: promotionMousePosition, move: lastMove, size: size }) : null}
+		</>
 	);
 };
