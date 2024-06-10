@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import Chessboard, { Color, Role } from '@/components/chess/Chessboard';
-import { Button, Container, Hidden, Paper } from '@mui/material';
+import { Backdrop, Button, CircularProgress, Container, Hidden, Paper } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Chess } from 'chess.js';
 import Clock from '@/components/chess/Clock';
@@ -34,6 +34,8 @@ export default function PlayID() {
 
     const [offeredDraw, setOfferedDraw] = useState(false);
 
+    const [reconnecting, setReconnecting] = useState(false);
+
     let reconnectAttempt = 0;
 
     if (!gameId || !joinId) {
@@ -65,6 +67,7 @@ export default function PlayID() {
     }
 
     function connectToGame() {
+        setReconnecting(true);
         const client = new WebSocket('ws://localhost:2425/ws');
         setClient(client);
         let reconnectId = null;
@@ -72,6 +75,7 @@ export default function PlayID() {
             reconnectId = JSON.parse(localStorage.getItem(gameId))[joinId];
         } catch {}
         client.onopen = () => {
+            setReconnecting(false);
             client.send(JSON.stringify({
                 'id': gameId,
                 'joinId': joinId || 'none',
@@ -151,10 +155,27 @@ export default function PlayID() {
                     </Paper>
                 )
             }
-            
+
+            <Backdrop
+                sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+                open={reconnecting}
+                className='flex flex-col gap-4'
+                onClick={() => {
+                    setReconnecting(false);
+                }}
+                >
+                <CircularProgress color="inherit" />
+                <h1>
+                    Connecting {
+                        reconnectAttempt > 0 ? `(${reconnectAttempt})` : ""
+                    }
+                </h1>
+            </Backdrop>
 
             <Hidden lgDown>
-                <Container className='flex flex-row'>
+                
+
+                <Container className='flex flex-row gap-2'>
                     <Chessboard id={gameId} joinId={joinId} boardState={boardState} role={role} color={color} playing={winner === null} flipped={flipped} onMove={onMove} />
                     <div className='w-full flex flex-col justify-between'>
                         <Clock time={color === Color.BLACK ? whiteTime : blackTime} color={color === Color.BLACK ? 'white' : 'black'} dimmed={color === Color.BLACK ? boardState?.turn() === 'b' : boardState?.turn() === 'w'} />
