@@ -1,1 +1,0 @@
-emcc --bind -O3 Engine.cpp -o ../web/public/engine.js -s WASM=1 -s NO_EXIT_RUNTIME=1 -std=c++20 -s ENVIRONMENT='web' -s ASSERTIONS=1 -s MODULARIZE -s EXPORT_NAME="Engine"

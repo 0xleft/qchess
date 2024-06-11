@@ -1,0 +1,68 @@
+version: "3"
+services:
+  database:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: qchess
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - internal-qchess
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  qchess-web:
+    container_name: qchess-web
+    build:
+      context: ./web
+      dockerfile: Dockerfile.prod
+    restart: always
+    ports:
+      - "3000"
+    networks:
+      - reverse-proxy
+      - internal-qchess
+    depends_on:
+      database:
+        condition: service_healthy
+
+  qchess-ws:
+    container_name: qchess-ws
+    build:
+      context: ./ws
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "80"
+    networks:
+      - reverse-proxy
+      - internal-qchess
+
+  reverse-proxy:
+    container_name: reverse-proxy
+    build:
+      context: ./reverse-proxy
+      dockerfile: Dockerfile.prod
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - reverse-proxy
+    depends_on:
+      - qchess-web
+      - qchess-ws
+
+networks:
+  reverse-proxy:
+    driver: bridge
+  internal-qchess:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local
