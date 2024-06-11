@@ -37,7 +37,7 @@ int main() {
 		}
 	}).detach();
 
-	CROW_WEBSOCKET_ROUTE(app, "/ws")
+	CROW_WEBSOCKET_ROUTE(app, "/ws/socket")
 		.onopen([&](crow::websocket::connection& conn) {
 			std::lock_guard<std::mutex> _(mtx);
 		})

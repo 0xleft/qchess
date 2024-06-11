@@ -11,7 +11,7 @@ export default function Index() {
 	const [boardState, setBoardState] = useState(new Chess());
 
 	function createGame(color) {
-		fetch(`http://localhost:2425/ws/create?private=${false}&random=${false}&time=${300}&increment=${0}`)
+		fetch(`/api/ws/create?private=${false}&random=${false}&time=${300}&increment=${0}`)
 		.then(res => res.json())
 		.then(data => {
 			router.push(`/play/${data.id}/${data[color === 'w' ? 'whiteId' : 'blackId']}?otherId=${data[color === 'w' ? 'blackId' : 'whiteId']}`);
@@ -23,28 +23,14 @@ export default function Index() {
 
 	return (
 		<>
-			<div className="h-[50vh] md:h-[70vh] lg:flex-row flex-col text-center items-center justify-center gap-2 lg:gap-20 mt-10 lg:mt-20 hidden md:flex">
+			<div className="h-[100vh] md:h-[70vh] lg:flex-row flex-col text-center items-center justify-center gap-2 lg:gap-20 mt-10 lg:mt-20 hidden lg:flex fixed lg:relative">
 				<div className="flex flex-col items-center justify-center gap-2 lg:gap-5">
 					<h1 className="text-4xl md:text-6xl font-bold text-center w-full">
 						Play chess
 					</h1>
 					<h2 className="lg:hidden">Enjoy simple chess network while being able to play anonymously without creating an account.</h2>
 
-					<Button
-						className="lg:hidden flex"
-						variant="contained"
-						color="primary"
-						startIcon={<SportsEsports />}
-						onClick={
-							() => {
-								document.getElementById('chessboard').scrollIntoView({ behavior: 'smooth' });
-							}
-						}
-					>
-						Play now
-					</Button>
-
-					<Button className="hidden lg:flex" variant="contained" color="primary" startIcon={<SportsEsports />} href="/play">
+					<Button variant="contained" color="primary" startIcon={<SportsEsports />} href="/play">
 						Play now
 					</Button>
 				</div>
@@ -59,6 +45,16 @@ export default function Index() {
 			</div>
 
 			<div className="flex justify-center items-center w-full flex-col gap-4 mt-20 lg:hidden" id="chessboard">
+				<div className="fixed items-center flex flex-col gap-4">
+					<h1 className="text-5xl md:text-6xl font-bold text-center w-full">
+						Play chess
+					</h1>
+
+					<Button variant="contained" color="primary" startIcon={<SportsEsports />} href="/play">
+						Play now
+					</Button>
+				</div>
+
 				<Chessboard boardState={boardState} playing={true} onSelect={(piece) => {
 					createGame(boardState.get(piece).color);
 				}} />

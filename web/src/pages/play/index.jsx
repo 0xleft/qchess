@@ -62,7 +62,7 @@ export default function PlayIndex() {
 
 	function getPublicList(page) {
 		setLoading(true);
-		fetch(`http://localhost:2425/ws/public?skip=${page * 10}`)
+		fetch(`/api/ws/public?skip=${page * 10}`)
 			.then(res => res.json())
 			.then(data => {
 				if (!data || Object.keys(data).length === 0) {
@@ -84,7 +84,7 @@ export default function PlayIndex() {
 	}, []);
 
 	function createGame() {
-		fetch(`http://localhost:2425/ws/create?private=${isPrivate}&color=${color}&random=${color === 'random'}&time=${time * 60}&increment=${increment}`)
+		fetch(`/api/ws/create?private=${isPrivate}&color=${color}&random=${color === 'random'}&time=${time * 60}&increment=${increment}`)
 		.then(res => res.json())
 		.then(data => {
 			let tempColor = color;
