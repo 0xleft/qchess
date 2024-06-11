@@ -2,6 +2,7 @@
 #include <vector>
 #include <mutex>
 #include "Game.h"
+#include <cpr/cpr.h>
 
 int main() {
 	std::cout << "Starting server... :)" << std::endl;
@@ -11,8 +12,6 @@ int main() {
 
 	std::mutex mtx;
 	std::vector<ws::Game*> games;
-
-	ws::Database database;
 
 	// start thread to check for inactive games
 	std::thread([&]() {
@@ -24,7 +23,15 @@ int main() {
 					// todo
 					std::cout << "Game " << game->getGameId() << " has expired" << std::endl;
 					if (game->getMoves().size() > 0) {
-						database.saveGame(game);
+						crow::json::wvalue json;
+						json["gameId"] = game->getGameId();
+						json["winner"] = game->getWinner();
+						json["moves"] = game->getMovesString();
+						json["playedAt"] = game->getCreated();
+
+						auto response = cpr::Post(cpr::Url{"http://localhost:3000/api/ws/uploadGame"}, cpr::Body{json.dump()}, cpr::Header{{"Content-Type", "application/json"}});
+						std::cout << response.text << std::endl;
+						std::cout << "Game " << game->getGameId() << " has been uploaded" << std::endl;
 					}
 
 					delete game;
@@ -114,7 +121,6 @@ int main() {
 			crow::response response;
 			response.set_header("Content-Type", "application/json");
 			response.write(json.dump());
-			response.set_header("Access-Control-Allow-Origin", "*"); // for development purposes only
 			return response;
 		});
 
@@ -157,44 +163,6 @@ int main() {
 			crow::response response;
 			response.set_header("Content-Type", "application/json");
 			response.write(json.dump());
-			response.set_header("Access-Control-Allow-Origin", "*"); // for development purposes only
-			return response;
-		});
-
-	CROW_ROUTE(app, "/ws/game")
-		([&](const crow::request& req) {
-			if (!req.url_params.get("id")) {
-				crow::response response;
-				response.set_header("Content-Type", "application/json");
-				response.write("{\"error\": \"Invalid request\"}");
-				response.set_header("Access-Control-Allow-Origin", "*"); // for development purposes only
-				return response;
-			}
-
-			ws::Game* game = database.loadGame(req.url_params.get("id"));
-
-			if (!game) {
-				crow::response response;
-				response.set_header("Content-Type", "application/json");
-				response.write("{\"error\": \"Game not found\"}");
-				response.set_header("Access-Control-Allow-Origin", "*"); // for development purposes only
-				return response;
-			}
-
-			crow::json::wvalue json({
-				// {"id", game->getGameId()},
-				{"moves", game->getMovesString()},
-				{"created", game->getCreated()},
-				{"whiteTime", game->getWhiteTime()},
-				{"blackTime", game->getBlackTime()},
-			});
-
-			delete game;
-
-			crow::response response;
-			response.set_header("Content-Type", "application/json");
-			response.write(json.dump());
-			response.set_header("Access-Control-Allow-Origin", "*"); // for development purposes only
 			return response;
 		});
 

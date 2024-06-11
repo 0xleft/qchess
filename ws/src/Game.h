@@ -6,7 +6,6 @@
 #include <chess.hpp>
 #include "Connection.hpp"
 #include "Utils.h"
-#include <tao/pq.hpp>
 
 namespace ws
 {
@@ -21,7 +20,6 @@ class Game;
 
 class Database {
 private:
-    std::shared_ptr<tao::pq::connection> dbConnection = tao::pq::connection::create("dbname=movedb user=postgres password=postgres host=localhost");
 
 public:
     Database();

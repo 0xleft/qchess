@@ -6,6 +6,12 @@ datasource db {
 generator client {
   provider = "prisma-client-js"
 }
+
+enum Winner {
+  WHITE
+  BLACK
+  DRAW
+}
  
 model User {
   id            String          @id @default(cuid())
@@ -15,7 +21,6 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  // Optional for WebAuthn support
   Authenticator Authenticator[]
  
   createdAt DateTime @default(now())
@@ -61,7 +66,6 @@ model VerificationToken {
   @@id([identifier, token])
 }
  
-// Optional for WebAuthn support
 model Authenticator {
   credentialID         String  @unique
   userId               String
@@ -79,9 +83,8 @@ model Authenticator {
 
 model ChessGame {
   moves String[]
-  gameId String @id @unique
-  whitePlayerId String
-  blackPlayerId String
+  gameId String @unique @id
+  winner Winner
 
   createdAt DateTime @default(now())
 }
