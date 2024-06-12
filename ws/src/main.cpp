@@ -29,7 +29,7 @@ int main() {
 						json["moves"] = game->getMovesString();
 						json["playedAt"] = game->getCreated();
 
-						auto response = cpr::Post(cpr::Url{"http://qchess-web:3000/api/ws/uploadGame"}, cpr::Body{json.dump()}, cpr::Header{{"Content-Type", "application/json"}});
+						auto response = cpr::Post(cpr::Url{"http://192.168.1.158:3000/api/ws/uploadGame"}, cpr::Body{json.dump()}, cpr::Header{{"Content-Type", "application/json"}});
 						std::cout << response.text << std::endl;
 						std::cout << "Game " << game->getGameId() << " has been uploaded" << std::endl;
 					}

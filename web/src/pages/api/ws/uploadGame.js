@@ -14,24 +14,30 @@ export default async function handler(req, res) {
         winner,
         moves,
         playedAt,
-    } = JSON.parse(req.body);
+    } = req.body;
+
+    console.log(gameId, winner, moves, playedAt);
 
     if (!gameId || !winner || !moves || !playedAt) {
         return res.status(400).json({ error: "Invalid request" });
     }
 
     try {
-        prisma.chessGame.create({
+        await prisma.chessGame.create({
             data: {
-                gameid: gameId,
-                winned: winner,
-                moves: moves,
-                playedAt: playedAt,
+                gameId: gameId,
+                winner: winner.toUpperCase(),
+                moves: moves.split(","),
+                playedAt: new Date(playedAt),
             },
         });
 
         console.log("Game uploaded");
+
+        return res.status(200).json({ message: "Game uploaded" });
     } catch (error) {
+        console.log(error);
+
         return res.status(500).json({ error: process.env.NODE_ENV === "development" ? error : "An error occurred" });
     }
 

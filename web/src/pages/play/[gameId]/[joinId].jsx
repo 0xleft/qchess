@@ -69,7 +69,7 @@ export default function PlayID() {
 
     function connectToGame() {
         setReconnecting(true);
-        const client = new WebSocket('/ws/socket');
+        const client = new WebSocket('ws://localhost:2425/ws/socket');
         setClient(client);
         let reconnectId = null;
         try {
