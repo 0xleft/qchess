@@ -85,6 +85,7 @@ model ChessGame {
   moves String[]
   gameId String @unique @id
   winner Winner
+  playedAt DateTime
 
   createdAt DateTime @default(now())
 }

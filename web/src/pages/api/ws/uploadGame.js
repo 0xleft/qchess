@@ -23,10 +23,10 @@ export default async function handler(req, res) {
     try {
         prisma.chessGame.create({
             data: {
-                gameId,
-                winner,
-                moves,
-                playedAt,
+                gameid: gameId,
+                winned: winner,
+                moves: moves,
+                playedAt: playedAt,
             },
         });
 

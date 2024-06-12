@@ -12,5 +12,6 @@ export default (req, res) => NextAuth(req, res, {
         }),
     ],
     pages: {
+        "signIn": "/auth/login",
     },
 });
