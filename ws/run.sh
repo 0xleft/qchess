@@ -1,4 +1,4 @@
 set -e
 
-cmake --build .
+cmake --build . -j 4
 ./ws

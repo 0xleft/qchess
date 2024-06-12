@@ -18,6 +18,12 @@ FetchContent_Declare(cpr GIT_REPOSITORY https://github.com/libcpr/cpr.git
                          GIT_TAG 3b15fa82ea74739b574d705fea44959b58142eb8)
 FetchContent_MakeAvailable(cpr)
 
+
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    target_compile_options(ws PRIVATE -O3)
+    target_compile_definitions(ws PRIVATE WS_PRODUCTION)
+endif()
+
 target_include_directories(ws PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 target_include_directories(ws PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
 find_package(Crow)

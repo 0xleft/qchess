@@ -8,7 +8,9 @@ int main() {
 	std::cout << "Starting server... :)" << std::endl;
 
 	crow::Crow<> app;
-	// app.loglevel(crow::LogLevel::WARNING);
+#ifdef WS_PRODUCTION
+	app.loglevel(crow::LogLevel::WARNING);
+#endif
 
 	std::mutex mtx;
 	std::vector<ws::Game*> games;

@@ -15,7 +15,7 @@ RUN cd Crow && mkdir build && cd build && cmake .. -DCROW_BUILD_EXAMPLES=OFF -DC
 
 COPY . .
 
-RUN cmake .
+RUN cmake -DCMAKE_BUILD_TYPE=Release .
 RUN cmake --build . -j 4
 
 CMD ["./ws"]
