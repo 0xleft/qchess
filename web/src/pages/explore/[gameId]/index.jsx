@@ -42,8 +42,17 @@ export default function ExploreID({ game }) {
     const [currentMove, setCurrentMove] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
 
+    const [engineLoaded, setEngineLoaded] = useState(false);
+    const engine = useRef(null);
+
     return (
         <div className='flex flex-row'>
+            <script src="stockfish.js" onLoad={() => {
+                Stockfish().then((sf) => {
+                    engine.current = sf;
+                    setEngineLoaded(true);
+                });
+            }}></script>
 
             <Chessboard boardState={boardState} setBoardState={setBoardState} currentMove={currentMove} setCurrentMove={setCurrentMove} flipped={isFlipped} />
 
