@@ -11,19 +11,34 @@ class ChessEngine {
         this.bestMoveListeners = [];
 
         this.engine.addMessageListener((event) => {
+
+            console.log(event);
             if (event.startsWith('bestmove')) {
                 const [_, bestMove, __, ponder] = event.split(' ');
                 this.bestMove = bestMove;
                 this.ponder = ponder;
 
                 this.bestMoveListeners.forEach((listener) => {
-                    listener(bestMove, ponder, this.score, this.moveLine, this.depth);
+                    listener({
+                        bestMove: this.bestMove,
+                        ponder: this.ponder,
+                        score: this.score,
+                        moveLine: this.moveLine,
+                        depth: this.depth
+                    });
                 });
             }
 
-            console.log(event);
-
             if (event.startsWith('info')) {
+                this.bestMoveListeners.forEach((listener) => {
+                    listener({
+                        bestMove: this?.moveLine[0],
+                        ponder: this.ponder, 
+                        score: this.score, 
+                        moveLine: this.moveLine, 
+                        depth: this.depth 
+                    });
+                });
                 const info = event.split(' ');
 
                 if (info.includes('depth')) {
@@ -43,6 +58,9 @@ class ChessEngine {
 
                 if (info.includes('pv')) {
                     const pvIndex = info.indexOf('pv') + 1;
+                    if (info.slice(pvIndex).length === 1) {
+                        return;
+                    }
                     this.moveLine = info.slice(pvIndex);
                 }
             }
@@ -68,10 +86,18 @@ class ChessEngine {
     getMoveLine() {
         return this.moveLine;
     }
+
+    stop() {
+        this.engine.postMessage('stop');
+    }
     
     async search(depth, time) {
         if (this.searching) {
-            throw new Error('Already searching');
+            this.engine.postMessage('stop');
+            setTimeout(() => {
+                this.searching = false;
+                return this.search(depth, time);
+            }, 100);
         }
         if (this.boardState === null) {
             throw new Error('Board state not set');
@@ -101,7 +127,11 @@ class ChessEngine {
 
     async search(depth) {
         if (this.searching) {
-            throw new Error('Already searching');
+            this.engine.postMessage('stop');
+            setTimeout(() => {
+                this.searching = false;
+                return this.search(depth);
+            }, 100);
         }
         if (this.boardState === null) {
             throw new Error('Board state not set');

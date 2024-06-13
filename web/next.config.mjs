@@ -15,16 +15,6 @@ const nextConfig = {
                     }
                 ],
             },
-
-            {
-                source: '/stockfish',
-                headers: [
-                    {
-                        key: 'Cache-Control',
-                        value: 'public, max-age=30000',
-                    },
-                ]
-            }
         ];
     }
 };

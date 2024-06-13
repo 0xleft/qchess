@@ -1,89 +1,141 @@
 import { useRouter } from 'next/router';
 import prisma from '@/lib/prisma';
-import { useEffect, useRef, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import Chessboard from '@/components/chess/Chessboard';
 import Movelist from '@/components/Movelist';
-import { Button } from '@mui/material';
+import { Button, Paper } from '@mui/material';
 import Script from 'next/script';
 import ChessEngine from '@/lib/stockfish';
 
 export async function getServerSideProps({ params }) {
 
-    const { gameId } = params;
+	const { gameId } = params;
 
-    const data = await prisma.chessGame.findUnique({
-        where: {
-            gameId: gameId,
-        },
-    });
+	const data = await prisma.chessGame.findUnique({
+		where: {
+			gameId: gameId,
+		},
+	});
 
-    if (!data) {
-        return {
-            notFound: true,
-        };
-    }
+	if (!data) {
+		return {
+			notFound: true,
+		};
+	}
 
-    return {
-        props: {
-            game: {
-                winner: data.winner,
-                moves: data.moves,
-                gameId: data.gameId,
-                playedAt: data.playedAt.toString(),
-            }
-        },
-    };
+	return {
+		props: {
+			game: {
+				winner: data.winner,
+				moves: data.moves,
+				gameId: data.gameId,
+				playedAt: data.playedAt.toString(),
+			}
+		},
+	};
 }
 
 export default function ExploreID({ game }) {
-    const router = useRouter();
-    const { gameId } = router.query;
+	const router = useRouter();
+	const { gameId } = router.query;
 
-    const [boardState, setBoardState] = useState(new Chess("4r1k1/r1q2ppp/ppp2n2/4P3/5Rb1/1N1BQ3/PPP3PP/R5K1 w - - 1 17"));
-    const [currentMove, setCurrentMove] = useState(0);
-    const [isFlipped, setIsFlipped] = useState(false);
+	const [boardState, setBoardState] = useState(new Chess());
+	const [currentMove, setCurrentMove] = useState(0);
+	const [isFlipped, setIsFlipped] = useState(false);
 
-    const [engineLoaded, setEngineLoaded] = useState(false);
-    const engine = useRef(null);
+	const [engineLoaded, setEngineLoaded] = useState(false);
+	const engine = useRef(null);
+	const [showEngine, setShowEngine] = useState(false);
+	const [engineInfo, setEngineInfo] = useState({ bestMove: '', ponder: '', score: '', moveLine: '', depth: '' });
 
-    function loadEngine() {
+	const [deviation, setDeviation] = useState(false);
+
+	async function onMove() {
+		engine.current.stop();
+		engine.current.setBoardState(boardState);
+		engine.current.search(30).catch((err) => {
+			console.error(err);
+		});
+	}
+
+	function onBestMove(info) {
+		setEngineInfo(info);
+	}
+
+	function loadEngine() {
 		if(typeof window.Stockfish === 'function' && WebAssembly.current === undefined){
 			window.Stockfish().then(async (sf) => {
 				engine.current = new ChessEngine(sf);
 				setEngineLoaded(true);
-                engine.current.setBoardState(boardState);
-                console.log(await engine.current.search(20))
-                console.log(await engine.current.search(20, 2000))
-            });
+				engine.current.setBoardState(boardState);
+				engine.current.addBestMoveListener(onBestMove);
+				engine.current.search(30).catch((err) => {
+					console.error(err);
+				});
+			});
 		}
 	}
 
-    return (
-        <div className='flex flex-row'>
-            <Script src="/stockfish/stockfish.js" strategy='beforeInteractive'/>
+	useEffect(() => {
+		loadEngine();
+	}, []);
 
-            <Chessboard boardState={boardState} setBoardState={setBoardState} currentMove={currentMove} setCurrentMove={setCurrentMove} flipped={isFlipped} />
+	return (
+		<div className='flex flex-row'>
+			<Script src="/stockfish/stockfish.js" strategy='beforeInteractive'/>
 
-            <div>
-                <Movelist moves={game.moves} />
-                <Button onClick={() => setIsFlipped(!isFlipped)}>Flip board</Button>
+			<Chessboard boardState={boardState} setBoardState={setBoardState} currentMove={currentMove} setCurrentMove={setCurrentMove} flipped={isFlipped} playing={true} onMove={(move) => {
+				if (move.promotion === undefined) {
+					move.promotion = "";
+				}
+				boardState.move(move);
+				setBoardState(new Chess(boardState.fen()));
+				setDeviation(true);
+				onMove().catch((err) => {
+					console.error(err);
+				});
+			}} />
 
-                <Button onClick={() => {
-                    if (currentMove > 0) {
-                        setCurrentMove(currentMove - 1);
-                        boardState.undo();
-                    }
-                }}>Undo</Button>
+			<Paper className='p-4'>
+				<Button onClick={() => setShowEngine(!showEngine)}>
+					Engine
+				</Button>
 
-                <Button onClick={() => {
-                    if (currentMove < game.moves.length) {
-                        boardState.move(game.moves[currentMove]);
-                        setCurrentMove(currentMove + 1);
-                    }
-                }
-                }>Redo</Button>
-            </div>
-        </div>
-    );
+				{showEngine && engineLoaded && (
+					<div>
+						<p>Best move: {engineInfo.bestMove}</p>
+						<p>Ponder: {engineInfo.ponder}</p>
+						<p>Score: {engineInfo.score}</p>
+						<p>Move line: {engineInfo.moveLine}</p>
+						<p>Depth: {engineInfo.depth}</p>
+					</div>
+				)}
+
+				<Movelist moves={game.moves} />
+				<Button onClick={() => setIsFlipped(!isFlipped)}>Flip board</Button>
+
+				<Button onClick={async () => {
+					if (currentMove > 0) {
+						setCurrentMove(currentMove - 1);
+						boardState.undo();
+						onMove().catch((err) => {
+							console.error(err);
+						});
+					}
+				}}>Undo</Button>
+
+				<Button onClick={async () => {
+					if (currentMove < game.moves.length) {
+						boardState.move(game.moves[currentMove]);
+						setCurrentMove(currentMove + 1);
+						onMove().catch((err) => {
+							console.error(err);
+						});
+					}
+				}
+				}>Redo</Button>
+			</Paper>
+		</div>
+	);
 }
