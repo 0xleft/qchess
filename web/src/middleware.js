@@ -2,12 +2,7 @@ import { NextResponse } from "next/server";
 import { withAuth } from 'next-auth/middleware';
 
 const publicPaths = ["/user/*"];
-
-function isPublic(path) {
-	return publicPaths.find((x) =>
-		path.match(new RegExp(`^${x}$`.replace("*$", "(.*)$")))
-	);
-};
+const isPublic = (path) => publicPaths.find((x) => path.match(new RegExp(`^${x}$`.replace("*$", "(.*)$"))));
 
 export default withAuth(req => {
 	if (isPublic(new URL(req.url).pathname)) {
@@ -20,6 +15,7 @@ export default withAuth(req => {
 
 	return NextResponse.redirect(new URL("/auth/signin", req.nextUrl.origin));
 });
+
 
 export const config = {
 	matcher: ['/user']

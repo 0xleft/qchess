@@ -1,10 +1,12 @@
 import { useRouter } from 'next/router';
 import prisma from '@/lib/prisma';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Chess } from 'chess.js';
 import Chessboard from '@/components/chess/Chessboard';
 import Movelist from '@/components/Movelist';
 import { Button } from '@mui/material';
+import Script from 'next/script';
+import ChessEngine from '@/lib/stockfish';
 
 export async function getServerSideProps({ params }) {
 
@@ -38,21 +40,28 @@ export default function ExploreID({ game }) {
     const router = useRouter();
     const { gameId } = router.query;
 
-    const [boardState, setBoardState] = useState(new Chess());
+    const [boardState, setBoardState] = useState(new Chess("4r1k1/r1q2ppp/ppp2n2/4P3/5Rb1/1N1BQ3/PPP3PP/R5K1 w - - 1 17"));
     const [currentMove, setCurrentMove] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
 
     const [engineLoaded, setEngineLoaded] = useState(false);
     const engine = useRef(null);
 
+    function loadEngine() {
+		if(typeof window.Stockfish === 'function' && WebAssembly.current === undefined){
+			window.Stockfish().then(async (sf) => {
+				engine.current = new ChessEngine(sf);
+				setEngineLoaded(true);
+                engine.current.setBoardState(boardState);
+                console.log(await engine.current.search(20))
+                console.log(await engine.current.search(20, 2000))
+            });
+		}
+	}
+
     return (
         <div className='flex flex-row'>
-            <script src="stockfish.js" onLoad={() => {
-                Stockfish().then((sf) => {
-                    engine.current = sf;
-                    setEngineLoaded(true);
-                });
-            }}></script>
+            <Script src="/stockfish/stockfish.js" strategy='beforeInteractive'/>
 
             <Chessboard boardState={boardState} setBoardState={setBoardState} currentMove={currentMove} setCurrentMove={setCurrentMove} flipped={isFlipped} />
 
