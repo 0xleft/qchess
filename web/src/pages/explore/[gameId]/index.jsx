@@ -38,7 +38,6 @@ export async function getServerSideProps({ params }) {
 
 export default function ExploreID({ game }) {
 	const router = useRouter();
-	const { gameId } = router.query;
 
 	const [boardState, setBoardState] = useState(new Chess());
 	const [currentMove, setCurrentMove] = useState(0);
@@ -78,12 +77,17 @@ export default function ExploreID({ game }) {
 	}
 
 	useEffect(() => {
+
+		router.events.on('routeChangeStart', () => {
+			engine.current?.stop();
+		});
+
 		loadEngine();
 	}, []);
 
 	return (
 		<div className='flex flex-row'>
-			<Script src="/stockfish/stockfish.js" strategy='beforeInteractive'/>
+			<Script src="/stockfish/stockfish.js" strategy='beforeInteractive' />
 
 			<Chessboard boardState={boardState} setBoardState={setBoardState} currentMove={currentMove} setCurrentMove={setCurrentMove} flipped={isFlipped} playing={true} onMove={(move) => {
 				if (move.promotion === undefined) {
