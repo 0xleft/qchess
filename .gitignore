@@ -10,6 +10,3 @@ ws/ws
 web/public/engine.js
 web/public/engine.wasm
 /ws/_deps
-web/public/stockfish/stockfish.js
-web/public/stockfish/stockfish.wasm
-web/public/stockfish/stockfish.worker.js
