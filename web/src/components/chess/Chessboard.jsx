@@ -174,15 +174,23 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 								onMouseUp={() => {
 									if (hoverSquare) {
 										const moves = boardState.moves({ square: hoverSquare });
+										if (boardState.get(hoverSquare).type === 'k' && Math.abs(SQUARES.indexOf(hoverSquare) - SQUARES.indexOf(SQUARES[8 * i + j])) === 2) {
+											try {
+												boardState.move({ from: hoverSquare, to: SQUARES[8 * i + j] });
+												boardState.undo();
+											} catch (e) {
+												setHoverSquare(null);
+												return;
+											}
+											onMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
+										}
 										if (moves.some(move => move.includes(SQUARES[8 * i + j]))) {
-											
 											if (boardState.get(hoverSquare).type === 'p' && (i === 0 || i === 7)) {
 												setSelectingPromotion(true);
 												setLastMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
 												setPromotionMousePosition({ x: mousePosition.x, y: mousePosition.y });
 												return;
 											}
-
 											onMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
 										}
 										setHoverSquare(null);
