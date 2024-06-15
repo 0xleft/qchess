@@ -101,9 +101,14 @@ export default function PlayIndex() {
 	return (
 		<>
 			<Container maxWidth='md' className='mt-5 mb-20'> {/* big margin at bottom for phone screens */}
-				<Box className='flex justify-between items-center'>
+				<Box className='flex justify-between items-center gap-2'>
 					<Button variant='contained' color='primary' className='w-full' onClick={createGame}>
-						Create
+						Online Game
+					</Button>
+					<Button variant='contained' color='info' className='w-full' onClick={() => {
+						router.push('/play/ai');
+					}}>
+						Play against AI
 					</Button>
 				</Box>
 				<Box className='flex justify-between items-center mt-5'>

@@ -23,11 +23,15 @@ export default function Navbar() {
                     <Divider orientation='vertical' flexItem color='white' />
 
                     <Link href='/play' className="pl-5 font-thin text-xl pr-5 hover:text-[#2196f3]">
-                        Play
+                        Play Online
                     </Link>
 
-                    <Link href='/explore' className="text-xl font-thin pr-5 hover:text-[#2196f3]">
-                        Explore
+                    <Link href='/analysis' className="text-xl font-thin pr-5 hover:text-[#2196f3]">
+                        Analysis
+                    </Link>
+
+                    <Link href='/play/ai' className="text-xl font-thin pr-5 hover:text-[#2196f3]">
+                        Play AI
                     </Link>
 				</div>
 				<div className='md:flex items-center space-x-2 flex-row flex'>

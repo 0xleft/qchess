@@ -10,35 +10,7 @@ import ChessEngine from '@/lib/engine';
 import Evalbar from '@/components/Evalbar';
 import { ArrowLeft, ArrowRight, Flip, Psychology } from '@mui/icons-material';
 
-export async function getServerSideProps({ params }) {
-
-	const { gameId } = params;
-
-	const data = await prisma.chessGame.findUnique({
-		where: {
-			gameId: gameId,
-		},
-	});
-
-	if (!data) {
-		return {
-			notFound: true,
-		};
-	}
-
-	return {
-		props: {
-			game: {
-				winner: data.winner,
-				moves: data.moves,
-				gameId: data.gameId,
-				playedAt: data.playedAt.toString(),
-			}
-		},
-	};
-}
-
-export default function ExploreID({ game }) {
+export default function PlayAI() {
 	const router = useRouter();
 
 	const [boardState, setBoardState] = useState(new Chess());

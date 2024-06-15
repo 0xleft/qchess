@@ -25,7 +25,7 @@ export async function getServerSideProps() {
 	}
 }
 
-export default function ExploreIndex(props) {
+export default function AnalysisIndex(props) {
 	const [loading, setLoading] = useState(false);
 
 	const [page, setPage] = useState(0);
@@ -71,7 +71,7 @@ export default function ExploreIndex(props) {
 									sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
 								>
 									<TableCell component="th" scope="row">
-										<Link href={`/explore/${row.gameId}`}>
+										<Link href={`/analysis/${row.gameId}`}>
 											<Button variant='contained' color='primary'>
 												View
 											</Button>
