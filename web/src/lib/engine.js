@@ -11,8 +11,6 @@ class ChessEngine {
         this.bestMoveListeners = [];
 
         this.engine.addMessageListener((event) => {
-
-            console.log(event);
             if (event.startsWith('bestmove')) {
                 const [_, bestMove, __, ponder] = event.split(' ');
                 this.bestMove = bestMove;

@@ -1,6 +1,13 @@
 import { Paper } from "@mui/material";
 
-export default function Evalbar({ score, className = "" }) {
+export default function Evalbar({ score, turn, className = "" }) {
+    console.log(score);
+    if (String(score).includes("Mate")) {
+        return null;
+    }
+
+    score = parseInt(score) * (turn === "w" ? 1 : -1);
+
     const whiteWidth = 50 + (score / 1500) * 50;
     const blackWidth = 50 - (score / 1500) * 50;
 

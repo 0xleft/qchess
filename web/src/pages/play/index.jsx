@@ -167,11 +167,15 @@ export default function PlayIndex() {
 							sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
 							>
 							<TableCell component="th" scope="row">
-								<Link href={`/play/${row.id}/${row.whiteId || row.blackId}`}>
-									<Button variant='contained' color={row.whiteId === "" ? 'primary' : 'info'}>
-										Join as {row.whiteId === "" ? 'black' : 'white'}
-									</Button>
-								</Link>
+								{row.whiteId || row.blackId ? (
+									<Link href={`/play/${row.id}/${row.whiteId || row.blackId}`}>
+										<Button variant='contained' color={row.whiteId === "" ? 'primary' : 'info'}>
+											Join as {row.whiteId === "" ? 'black' : 'white'}
+										</Button>
+									</Link>
+								) : (
+									<></>
+								)}
 							</TableCell>
 							<TableCell component="th" scope="row">
 								<Link href={`/play/${row.id}/spectate`}>

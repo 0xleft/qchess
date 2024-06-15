@@ -132,15 +132,19 @@ int main() {
 			crow::json::wvalue json;
 			
 			int skip = 0;
+			bool toSpectate = true;
 			if (req.url_params.get("skip")) {
 				skip = std::stoi(req.url_params.get("skip"));
+			}
+			if (req.url_params.get("toSpectate")) {
+				toSpectate = std::string(req.url_params.get("toSpectate")) == "true";
 			}
 
 			int count = 0;
 
 			for (int i = games.size() - 1; i >= 0; i--) {
 				ws::Game* game = games[i];
-				if (!game->isPrivate() && game->getGameState() == ws::GameState::WAITING) {
+				if (!game->isPrivate() && (game->getGameState() == ws::GameState::WAITING && !(game->hasWhiteJoinedGame() && game->hasBlackJoinedGame()) || toSpectate && game->getGameState() == ws::GameState::IN_PROGRESS)) {
 					skip--;
 					if (skip >= 0) {
 						continue;
