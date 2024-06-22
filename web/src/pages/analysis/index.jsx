@@ -49,6 +49,8 @@ export default function AnalysisIndex(props) {
 	
 	return (
 		<>
+			<title>Analysis</title>
+
 			<Container maxWidth='md'>
 				<TableContainer component={Paper}>
 					<Table aria-label="Avaliable public games">

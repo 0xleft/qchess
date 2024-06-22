@@ -67,6 +67,7 @@ export default function PlayAI() {
 	}
 
 	useEffect(() => {
+		
 		engineMove();
 	}, [color]);
 
@@ -80,6 +81,8 @@ export default function PlayAI() {
 
 	return (
 		<div className='flex flex-row'>
+			<title>Play against AI</title>
+			
 			<Script src="/stockfish/stockfish.js" strategy='beforeInteractive' />
 			
 			<Hidden lgDown>

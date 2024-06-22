@@ -145,6 +145,8 @@ export default function PlayID() {
 
     return (
         <>
+            <title>QChess - Playing</title>
+
             {/* popup in middle */}
             {
                 popup && (

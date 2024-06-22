@@ -102,6 +102,40 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 					<div key={i} className="flex flex-row select-none" style={{ height: size }}>
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'}`} style={{ width: size, height: size }}
+								onTouchStart={() => {
+									if (selectingPromotion) {
+										setSelectingPromotion(false);
+										return;
+									};
+									if (!playing) return;
+									if (!boardState) return;
+									if (role === Role.SPECTATOR) return;
+									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])?.color !== color && !color === Color.ALL) return;
+
+									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])) {
+										setHoverSquare(SQUARES[8 * (7 - i) + (7 - j)]);
+										onSelect(SQUARES[8 * (7 - i) + (7 - j)]);
+									}
+								}}
+
+								onTouchEnd={() => {
+									if (hoverSquare) {
+										const moves = boardState.moves({ square: hoverSquare });
+										if (moves.some(move => move.includes(SQUARES[8 * (7 - i) + (7 - j)]))) {
+
+											if (boardState.get(hoverSquare).type === 'p' && (i === 0 || i === 7)) {
+												setSelectingPromotion(true);
+												setLastMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+												setPromotionMousePosition({ x: mousePosition.x, y: mousePosition.y });
+												return;
+											}
+
+											onMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+										}
+										setHoverSquare(null);
+									}
+								}}
+
 								onMouseDown={() => {
 									if (selectingPromotion) {
 										setSelectingPromotion(false);
@@ -155,6 +189,49 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 					<div key={i} className="flex flex-row select-none" style={{ height: size }}>
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'}`} style={{ width: size, height: size }}
+								onTouchStart={() => {
+									if (selectingPromotion) {
+										setSelectingPromotion(false);
+										return;
+									};
+									if (!playing) return;
+									if (!boardState) return;
+									if (role === Role.SPECTATOR) return;
+									if (boardState.get(SQUARES[8 * i + j])?.color !== color && !color === Color.ALL) return;
+
+									if (boardState.get(SQUARES[8 * i + j])) {
+										setHoverSquare(SQUARES[8 * i + j]);
+										onSelect(SQUARES[8 * i + j]);
+									}
+								}}
+
+								onTouchEnd={() => {
+									if (hoverSquare) {
+										const moves = boardState.moves({ square: hoverSquare });
+										if (boardState.get(hoverSquare).type === 'k' && Math.abs(SQUARES.indexOf(hoverSquare) - SQUARES.indexOf(SQUARES[8 * i + j])) === 2) {
+											try {
+												boardState.move({ from: hoverSquare, to: SQUARES[8 * i + j] });
+												boardState.undo();
+											} catch (e) {
+												console.log(e);
+												setHoverSquare(null);
+												return;
+											}
+											onMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
+										}
+										if (moves.some(move => move.includes(SQUARES[8 * i + j]))) {
+											if (boardState.get(hoverSquare).type === 'p' && (i === 0 || i === 7)) {
+												setSelectingPromotion(true);
+												setLastMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
+												setPromotionMousePosition({ x: mousePosition.x, y: mousePosition.y });
+												return;
+											}
+											onMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
+										}
+										setHoverSquare(null);
+									}
+								}}
+
 								onMouseDown={() => {
 									if (selectingPromotion) {
 										setSelectingPromotion(false);

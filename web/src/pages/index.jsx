@@ -23,6 +23,8 @@ export default function Index() {
 
 	return (
 		<>
+			<title>QChess</title>
+
 			<div className="h-[100vh] md:h-[70vh] lg:flex-row flex-col text-center items-center justify-center gap-2 lg:gap-20 mt-10 lg:mt-20 hidden lg:flex fixed lg:relative">
 				<div className="flex flex-col items-center justify-center gap-2 lg:gap-5">
 					<h1 className="text-4xl md:text-6xl font-bold text-center w-full">
@@ -44,7 +46,7 @@ export default function Index() {
 				</div>
 			</div>
 
-			<div className="flex justify-center items-center w-full flex-col gap-4 mt-20 lg:hidden" id="chessboard">
+			<div className="flex justify-center items-center w-full flex-col gap-4 mt-20 lg:hidden fixed" id="chessboard">
 				<div className="fixed items-center flex flex-col gap-4">
 					<h1 className="text-5xl md:text-6xl font-bold text-center w-full">
 						Play chess

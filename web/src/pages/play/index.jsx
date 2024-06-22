@@ -100,6 +100,8 @@ export default function PlayIndex() {
 
 	return (
 		<>
+			<title>Play chess</title>
+
 			<Container maxWidth='md' className='mt-5 mb-20'> {/* big margin at bottom for phone screens */}
 				<Box className='flex justify-between items-center gap-2'>
 					<Button variant='contained' color='primary' className='w-full' onClick={createGame}>

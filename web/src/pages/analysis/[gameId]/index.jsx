@@ -89,6 +89,8 @@ export default function AnalysisID({ game }) {
 
 	return (
 		<div className='flex flex-row'>
+			<title>Analysis</title>
+
 			<Script src="/stockfish/stockfish.js" strategy='beforeInteractive' />
 			
 			<Hidden lgDown>
