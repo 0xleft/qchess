@@ -34,16 +34,6 @@ export default function Navbar() {
                         Play AI
                     </Link>
 				</div>
-				<div className='md:flex items-center space-x-2 flex-row flex'>
-                    <div className='hidden md:flex items-center space-x-2'>
-                        <Button variant='contained' color='primary' href='/auth/login'>
-                            Login
-                        </Button>
-                        <Button variant='outlined' color='primary' href='/auth/register'>
-                            Register
-                        </Button>
-                    </div>
-				</div>
 			</div>
 		</header>
 		</>
