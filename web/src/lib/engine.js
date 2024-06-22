@@ -89,12 +89,12 @@ class ChessEngine {
         this.engine.postMessage('stop');
     }
     
-    async search(depth, time) {
+    async searchTime(depth, time) {
         if (this.searching) {
             this.engine.postMessage('stop');
             setTimeout(() => {
                 this.searching = false;
-                return this.search(depth, time);
+                return this.searchTime(depth, time);
             }, 100);
         }
         if (this.boardState === null) {
@@ -124,6 +124,7 @@ class ChessEngine {
     }
 
     async search(depth) {
+        console.log('searching');
         if (this.searching) {
             this.engine.postMessage('stop');
             setTimeout(() => {

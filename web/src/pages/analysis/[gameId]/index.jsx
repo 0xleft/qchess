@@ -80,7 +80,6 @@ export default function AnalysisID({ game }) {
 	}
 
 	useEffect(() => {
-
 		router.events.on('routeChangeStart', () => {
 			engine.current?.stop();
 		});
@@ -154,12 +153,15 @@ export default function AnalysisID({ game }) {
 										}
 
 										setBoardState(newBoard);
-										setCurrentMove(currentMove - 1);
 										return;
 									}
 									if (currentMove > 0) {
+										let newBoard = new Chess();
+										for (let i = 0; i < currentMove - 1; i++) {
+											newBoard.move(game.moves[i]);
+										}
+										setBoardState(newBoard);
 										setCurrentMove(currentMove - 1);
-										boardState.undo();
 										onMove().catch((err) => {
 											console.error(err);
 										});
@@ -174,10 +176,9 @@ export default function AnalysisID({ game }) {
 									if (deviation) {
 										setDeviation(false);
 										setBoardState(beforeDeviation);
-										setCurrentMove(currentMove + 1);
 
 										let newBoard = new Chess();
-										for (let i = 0; i < beforeDeviation + 1; i++) {
+										for (let i = 0; i < beforeDeviation; i++) {
 											newBoard.move(game.moves[i]);
 										}
 
@@ -211,7 +212,7 @@ export default function AnalysisID({ game }) {
 			</Hidden>
 			
 			<Hidden lgUp>
-				<div className='flex flex-col justify-center items-center h-full w-full gap-2'>
+				<div className='flex flex-col justify-center items-center h-full w-full gap-2 mb-20'>
 					<Chessboard boardState={boardState} setBoardState={setBoardState} currentMove={currentMove} setCurrentMove={setCurrentMove} flipped={isFlipped} playing={true} onMove={(move) => {
 						if (move.promotion === undefined) {
 							move.promotion = "";
@@ -230,7 +231,7 @@ export default function AnalysisID({ game }) {
 
 					<Paper className='p-4 flex flex-col justify-between'>
 						<div>
-							{engineLoaded && (
+							{engineLoaded && showEngine && (
 								<Paper className='p-4'>
 									<Evalbar score={engineInfo.score} turn={boardState.turn()} />
 									<div className='text-sm font-light p-2'>
@@ -271,12 +272,15 @@ export default function AnalysisID({ game }) {
 									}
 
 									setBoardState(newBoard);
-									setCurrentMove(currentMove - 1);
 									return;
 								}
 								if (currentMove > 0) {
+									let newBoard = new Chess();
+									for (let i = 0; i < currentMove - 1; i++) {
+										newBoard.move(game.moves[i]);
+									}
+									setBoardState(newBoard);
 									setCurrentMove(currentMove - 1);
-									boardState.undo();
 									onMove().catch((err) => {
 										console.error(err);
 									});
@@ -291,10 +295,9 @@ export default function AnalysisID({ game }) {
 								if (deviation) {
 									setDeviation(false);
 									setBoardState(beforeDeviation);
-									setCurrentMove(currentMove + 1);
 
 									let newBoard = new Chess();
-									for (let i = 0; i < beforeDeviation + 1; i++) {
+									for (let i = 0; i < beforeDeviation; i++) {
 										newBoard.move(game.moves[i]);
 									}
 
@@ -310,6 +313,14 @@ export default function AnalysisID({ game }) {
 								}
 							}}>
 								<ArrowRight />
+							</Button>
+
+							<Divider orientation="vertical" flexItem />
+
+							<Button onClick={() => {
+								setShowEngine(!showEngine);
+							}}>
+								<Psychology />
 							</Button>
 						</div>
 					</Paper>

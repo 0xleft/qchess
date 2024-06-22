@@ -130,7 +130,9 @@ export default function PlayIndex() {
 						</RadioGroup>
 					</div>
 				</Box>
-				<Box className='flex justify-between items-center mt-5 w-full'>
+				<Divider className='mt-5 mb-5' />
+				<Box className='flex justify-between items-center mt-5 w-full flex-col'>
+					<h1>Time Control</h1>
 					<Slider
 						aria-label="Time"
 						defaultValue={5}
@@ -142,7 +144,8 @@ export default function PlayIndex() {
 						max={60}
 					/>
 				</Box>
-				<Box className='flex justify-between items-center mt-5 w-full'>
+				<Box className='flex justify-between items-center mt-5 w-full flex-col'>
+					<h1>Increment</h1>
 					<Slider
 						aria-label="Increment"
 						defaultValue={5}

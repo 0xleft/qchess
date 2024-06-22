@@ -1,7 +1,6 @@
 import { Paper } from "@mui/material";
 
 export default function Evalbar({ score, turn, className = "" }) {
-    console.log(score);
     if (String(score).includes("Mate")) {
         return null;
     }

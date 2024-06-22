@@ -17,7 +17,7 @@ export default function Navbar() {
 			<div className='mx-auto flex flex-wrap p-2 flex-row md:flex-row items-center justify-between ml-3 mr-3'>
 				<div className='flex flex-row items-center space-x-2'>
                     <Link href='/' className="pr-4">
-                        <Image src='/LightPawn.webp' alt='logo' width={50} height={50} priority={false} />
+                        <Image src='/LightPawn.webp' alt='logo' width={50} height={50} />
                     </Link>
 
                     <Divider orientation='vertical' flexItem color='white' />

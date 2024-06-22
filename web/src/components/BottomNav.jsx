@@ -23,7 +23,7 @@ export default function BottomNav() {
                 >
                     <BottomNavigationAction label="Home" value="/" icon={<Home />} />
                     <BottomNavigationAction label="Play" value="/play" icon={<PlayArrow />} />
-                    <BottomNavigationAction label="Explore" value="/explore" icon={<RestoreIcon />} />
+                    <BottomNavigationAction label="Analysis" value="/analysis" icon={<RestoreIcon />} />
                 </BottomNavigation>
             </Box>
 		</>
