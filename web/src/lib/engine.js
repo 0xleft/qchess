@@ -124,7 +124,6 @@ class ChessEngine {
     }
 
     async search(depth) {
-        console.log('searching');
         if (this.searching) {
             this.engine.postMessage('stop');
             setTimeout(() => {
