@@ -57,6 +57,8 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 	const [lastMove, setLastMove] = useState(null);
 	const [promotionMousePosition, setPromotionMousePosition] = useState(null);
 
+	const [touching, setTouching] = useState(false);
+
 	const mousePosition = useMousePosition({ includeTouch: true });
 
 	function onSelectPromotion(piece, move) {
@@ -64,30 +66,12 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 		setSelectingPromotion(false);
 	};
 
-	useEffect(() => {
-		const handleMouseUp = () => {
-			setHoverSquare(null);
-		};
-	
-		if (typeof window !== 'undefined') {
-			window.addEventListener('mouseup', handleMouseUp);
-			window.addEventListener('touchend', handleMouseUp);
-		}
-	
-		return () => {
-			if (typeof window !== 'undefined') {
-				window.removeEventListener('mouseup', handleMouseUp);
-				window.removeEventListener('touchend', handleMouseUp);
-			}
-		};
-	}, []);
-
 	return (
 		<div>
 			<div className={"fixed transform " + (hoverSquare ? 'block' : 'hidden')} style={{ top: mousePosition.y, left: mousePosition.x, zIndex: 1000, pointerEvents: 'none', transform: 'translate(-50%, -50%)'
 			}}
 			>
-				{hoverSquare ? (
+				{hoverSquare && !touching ? (
 					<Piece
 						type={boardState.get(hoverSquare).type}
 						color={boardState.get(hoverSquare).color}
@@ -103,6 +87,12 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'}`} style={{ width: size, height: size }}
 								onTouchStart={() => {
+									setTouching(true);
+								}}
+
+								onClick={() => {
+									if (!touching) return;
+
 									if (selectingPromotion) {
 										setSelectingPromotion(false);
 										return;
@@ -112,21 +102,26 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 									if (role === Role.SPECTATOR) return;
 									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])?.color !== color && !color === Color.ALL) return;
 
-									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])) {
-										setHoverSquare(SQUARES[8 * (7 - i) + (7 - j)]);
-										onSelect(SQUARES[8 * (7 - i) + (7 - j)]);
-									}
-								}}
-
-								onTouchEnd={() => {
 									if (hoverSquare) {
 										const moves = boardState.moves({ square: hoverSquare });
-										if (moves.some(move => move.includes(SQUARES[8 * (7 - i) + (7 - j)]))) {
 
+										if (boardState.get(hoverSquare).type === 'k' && Math.abs(SQUARES.indexOf(hoverSquare) - SQUARES.indexOf(SQUARES[8 * (7 - i) + (7 - j)])) === 2) {
+											try {
+												boardState.move({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+												boardState.undo();
+											} catch (e) {
+												setHoverSquare(null);
+												return;
+											}
+											onMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+										}
+
+										if (moves.some(move => move.includes(SQUARES[8 * (7 - i) + (7 - j)]))) {
 											if (boardState.get(hoverSquare).type === 'p' && (i === 0 || i === 7)) {
 												setSelectingPromotion(true);
 												setLastMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
 												setPromotionMousePosition({ x: mousePosition.x, y: mousePosition.y });
+												setHoverSquare(null);
 												return;
 											}
 
@@ -134,9 +129,15 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 										}
 										setHoverSquare(null);
 									}
+
+									if (boardState.get(SQUARES[8 * (7 - i) + (7 - j)])) {
+										setHoverSquare(SQUARES[8 * (7 - i) + (7 - j)]);
+										onSelect(SQUARES[8 * (7 - i) + (7 - j)]);
+									}
 								}}
 
 								onMouseDown={() => {
+									if (touching) return;
 									if (selectingPromotion) {
 										setSelectingPromotion(false);
 										return;
@@ -153,10 +154,21 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 								}}
 
 								onMouseUp={() => {
-									if (hoverSquare) {
+									if (hoverSquare && !touching) {
 										const moves = boardState.moves({ square: hoverSquare });
-										if (moves.some(move => move.includes(SQUARES[8 * (7 - i) + (7 - j)]))) {
 
+										if (boardState.get(hoverSquare).type === 'k' && Math.abs(SQUARES.indexOf(hoverSquare) - SQUARES.indexOf(SQUARES[8 * (7 - i) + (7 - j)])) === 2) {
+											try {
+												boardState.move({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+												boardState.undo();
+											} catch (e) {
+												setHoverSquare(null);
+												return;
+											}
+											onMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+										}
+
+										if (moves.some(move => move.includes(SQUARES[8 * (7 - i) + (7 - j)]))) {
 											if (boardState.get(hoverSquare).type === 'p' && (i === 0 || i === 7)) {
 												setSelectingPromotion(true);
 												setLastMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
@@ -170,8 +182,10 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 									}
 								}}
 							>
-								
-								{boardState && boardState.get(SQUARES[8 * (7 - i) + (7 - j)]) && hoverSquare !== SQUARES[8 * (7 - i) + (7 - j)] ? (
+								{hoverSquare && boardState.moves({ square: hoverSquare }).some(move => move.includes(SQUARES[8 * (7 - i) + (7 - j)])) ? (
+									<div draggable={false} className="absolute bg-blue-500 bg-opacity-50 pointer-events-none" style={{ width: size, height: size }} />
+								) : null}
+								{boardState && boardState.get(SQUARES[8 * (7 - i) + (7 - j)]) && (hoverSquare !== SQUARES[8 * (7 - i) + (7 - j)] || touching) ? (
 									<Piece
 										type={boardState.get(SQUARES[8 * (7 - i) + (7 - j)]).type}
 										color={boardState.get(SQUARES[8 * (7 - i) + (7 - j)]).color}
@@ -190,6 +204,12 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 						{Array.from({ length: 8 }).map((_, j) => (
 							<div key={j} className={`${i % 2 === j % 2 ? 'bg-[#f0d9b5]' : 'bg-[#b58863]'}`} style={{ width: size, height: size }}
 								onTouchStart={() => {
+									setTouching(true);
+								}}
+
+								onClick={() => {
+									if (!touching) return;
+
 									if (selectingPromotion) {
 										setSelectingPromotion(false);
 										return;
@@ -199,13 +219,6 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 									if (role === Role.SPECTATOR) return;
 									if (boardState.get(SQUARES[8 * i + j])?.color !== color && !color === Color.ALL) return;
 
-									if (boardState.get(SQUARES[8 * i + j])) {
-										setHoverSquare(SQUARES[8 * i + j]);
-										onSelect(SQUARES[8 * i + j]);
-									}
-								}}
-
-								onTouchEnd={() => {
 									if (hoverSquare) {
 										const moves = boardState.moves({ square: hoverSquare });
 										if (boardState.get(hoverSquare).type === 'k' && Math.abs(SQUARES.indexOf(hoverSquare) - SQUARES.indexOf(SQUARES[8 * i + j])) === 2) {
@@ -213,7 +226,6 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 												boardState.move({ from: hoverSquare, to: SQUARES[8 * i + j] });
 												boardState.undo();
 											} catch (e) {
-												console.log(e);
 												setHoverSquare(null);
 												return;
 											}
@@ -224,15 +236,22 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 												setSelectingPromotion(true);
 												setLastMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
 												setPromotionMousePosition({ x: mousePosition.x, y: mousePosition.y });
+												setHoverSquare(null);
 												return;
 											}
 											onMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
 										}
 										setHoverSquare(null);
 									}
+
+									if (boardState.get(SQUARES[8 * i + j])) {
+										setHoverSquare(SQUARES[8 * i + j]);
+										onSelect(SQUARES[8 * i + j]);
+									}
 								}}
 
 								onMouseDown={() => {
+									if (touching) return;
 									if (selectingPromotion) {
 										setSelectingPromotion(false);
 										return;
@@ -249,7 +268,7 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 								}}
 
 								onMouseUp={() => {
-									if (hoverSquare) {
+									if (hoverSquare && !touching) {
 										const moves = boardState.moves({ square: hoverSquare });
 										if (boardState.get(hoverSquare).type === 'k' && Math.abs(SQUARES.indexOf(hoverSquare) - SQUARES.indexOf(SQUARES[8 * i + j])) === 2) {
 											try {
@@ -274,7 +293,10 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 									}
 								}}
 							>
-								{boardState && boardState.get(SQUARES[8 * i + j]) && hoverSquare !== SQUARES[8 * i + j] ? (
+								{hoverSquare && boardState.moves({ square: hoverSquare }).some(move => move.includes(SQUARES[8 * i + j])) ? (
+									<div draggable={false} className="absolute bg-blue-500 bg-opacity-50 pointer-events-none" style={{ width: size, height: size }} />
+								) : null}
+								{boardState && boardState.get(SQUARES[8 * i + j]) && (hoverSquare !== SQUARES[8 * i + j] || touching) ? (
 									<Piece
 										type={boardState.get(SQUARES[8 * i + j]).type}
 										color={boardState.get(SQUARES[8 * i + j]).color}
