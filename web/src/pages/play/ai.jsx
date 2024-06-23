@@ -24,6 +24,7 @@ export default function PlayAI() {
 
 	const [color, setColor] = useState('w');
 	const [thinkingTime, setThinkingTime] = useState(2000);
+	const [depth, setDepth] = useState(20);
 
 	function engineMove() {
 		if (!engine.current) {
@@ -31,7 +32,7 @@ export default function PlayAI() {
 		}
 		engine.current.stop();
 		engine.current.setBoardState(boardState);
-		engine.current.searchTime(30, thinkingTime).then((info) => {
+		engine.current.searchTime(depth, thinkingTime).then((info) => {
 			if (color === boardState.turn()) {
 				return;	
 			}
@@ -67,7 +68,6 @@ export default function PlayAI() {
 	}
 
 	useEffect(() => {
-		
 		engineMove();
 	}, [color]);
 
@@ -142,6 +142,19 @@ export default function PlayAI() {
 										max={10}
 									/>
 								</Box>
+
+								<Box className='flex justify-between items-center mt-5 w-full flex-col'>
+									<h1>Search depth</h1>
+									<Slider
+										aria-label="Depth"
+										defaultValue={20}
+										onChange={(e, value) => setDepth(value)} 
+										valueLabelDisplay="auto"
+										step={1}
+										min={1}
+										max={30}
+									/>
+								</Box>
 							</div>
 
 							<div className='flex flex-row'>
@@ -180,7 +193,7 @@ export default function PlayAI() {
 
 					<Paper className='p-4 flex flex-col justify-between'>
 						<div>
-							{engineLoaded && (
+							{engineLoaded && showEngine && (
 								<Paper className='p-4'>
 									<Evalbar score={engineInfo.score} turn={boardState.turn()} />
 									<div className='text-sm font-light p-2'>
@@ -193,6 +206,31 @@ export default function PlayAI() {
 							)}
 						</div>
 						
+						<Box className='flex justify-between items-center mt-5 w-full flex-col'>
+							<h1>AI Thinking time (s)</h1>
+							<Slider
+								aria-label="Thinking time"
+								defaultValue={5}
+								onChange={(e, value) => setThinkingTime(value * 1000)}
+								valueLabelDisplay="auto"
+								step={0.1}
+								min={0.1}
+								max={10}
+							/>
+						</Box>
+
+						<Box className='flex justify-between items-center mt-5 w-full flex-col'>
+							<h1>Search depth</h1>
+							<Slider
+								aria-label="Depth"
+								defaultValue={20}
+								onChange={(e, value) => setDepth(value)} 
+								valueLabelDisplay="auto"
+								step={1}
+								min={1}
+								max={30}
+							/>
+						</Box>
 
 						<div className='flex flex-row'>
 							<Button onClick={() => setIsFlipped(!isFlipped)}>
