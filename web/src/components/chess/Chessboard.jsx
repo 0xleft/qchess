@@ -114,6 +114,8 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 												return;
 											}
 											onMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+											setHoverSquare(null);
+											return;
 										}
 
 										if (moves.some(move => move.includes(SQUARES[8 * (7 - i) + (7 - j)]))) {
@@ -124,8 +126,9 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 												setHoverSquare(null);
 												return;
 											}
-
 											onMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
+											setHoverSquare(null);
+											return;
 										}
 										setHoverSquare(null);
 									}
@@ -175,7 +178,6 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 												setPromotionMousePosition({ x: mousePosition.x, y: mousePosition.y });
 												return;
 											}
-
 											onMove({ from: hoverSquare, to: SQUARES[8 * (7 - i) + (7 - j)] });
 										}
 										setHoverSquare(null);
@@ -229,7 +231,9 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 												setHoverSquare(null);
 												return;
 											}
+											setHoverSquare(null);
 											onMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
+											return;
 										}
 										if (moves.some(move => move.includes(SQUARES[8 * i + j]))) {
 											if (boardState.get(hoverSquare).type === 'p' && (i === 0 || i === 7)) {
@@ -240,6 +244,8 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 												return;
 											}
 											onMove({ from: hoverSquare, to: SQUARES[8 * i + j] });
+											setHoverSquare(null);
+											return;
 										}
 										setHoverSquare(null);
 									}
