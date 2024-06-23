@@ -15,14 +15,20 @@ export default function Index() {
 			.then(res => res.json())
 			.then(data => {
 				if (data) {
+					let found = false;
 					Object.values(data || {}).map(i => JSON.parse(i)).forEach(game => {
 						if (game.whiteId === null && color === Color.WHITE || game.blackId === null && color === Color.BLACK) {
 							return;
 						}
-	
+						
+						found = true;
 						router.push(`/play/${game.id}/${game[color === 'w' ? 'whiteId' : 'blackId']}?otherId=${game[color === 'w' ? 'blackId' : 'whiteId']}`);
 						return;
 					});
+
+					if (found) {
+						return;
+					}
 				}
 
 				fetch(`/api/ws/create?private=${false}&random=${color === "random"}&time=${300}&increment=${0}`)
@@ -70,7 +76,9 @@ export default function Index() {
 						Play chess
 					</h1>
 
-					<Button variant="contained" color="primary" startIcon={<SportsEsports />} href="/play">
+					<Button variant="contained" color="primary" startIcon={<SportsEsports />} onClick={() => {
+						createGame('random');
+					}}>
 						Play now
 					</Button>
 				</div>
