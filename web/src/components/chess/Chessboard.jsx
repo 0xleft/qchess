@@ -64,6 +64,7 @@ export default function Chessboard({ boardState, role, color, playing, flipped, 
 	function onSelectPromotion(piece, move) {
 		onMove({ from: move.from, to: move.to, promotion: piece });
 		setSelectingPromotion(false);
+		setHoverSquare(null);
 	};
 
 	return (

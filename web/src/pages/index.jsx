@@ -1,4 +1,4 @@
-import Chessboard from "@/components/chess/Chessboard";
+import Chessboard, { Color } from "@/components/chess/Chessboard";
 import { ArrowRight, ArrowRightAlt, Sports, SportsEsports } from "@mui/icons-material";
 import { Button } from "@mui/material";
 import { tsParticles } from "@tsparticles/engine";
@@ -11,15 +11,31 @@ export default function Index() {
 	const [boardState, setBoardState] = useState(new Chess());
 
 	function createGame(color) {
-		fetch(`/api/ws/create?private=${false}&random=${false}&time=${300}&increment=${0}`)
-		.then(res => res.json())
-		.then(data => {
-			router.push(`/play/${data.id}/${data[color === 'w' ? 'whiteId' : 'blackId']}?otherId=${data[color === 'w' ? 'blackId' : 'whiteId']}`);
-		}).catch(err => {
-			console.error(err);
-		});
+		fetch(`/api/ws/public`)
+			.then(res => res.json())
+			.then(data => {
+				if (data) {
+					Object.values(data || {}).map(i => JSON.parse(i)).forEach(game => {
+						if (game.whiteId === null && color === Color.WHITE || game.blackId === null && color === Color.BLACK) {
+							return;
+						}
+	
+						router.push(`/play/${game.id}/${game[color === 'w' ? 'whiteId' : 'blackId']}?otherId=${game[color === 'w' ? 'blackId' : 'whiteId']}`);
+						return;
+					});
+				}
+
+				fetch(`/api/ws/create?private=${false}&random=${color === "random"}&time=${300}&increment=${0}`)
+				.then(res => res.json())
+				.then(data => {
+					router.push(`/play/${data.id}/${data[color === 'w' ? 'whiteId' : 'blackId']}?otherId=${data[color === 'w' ? 'blackId' : 'whiteId']}`);
+				}).catch(err => {
+					console.error(err);
+				});
+			}).catch(err => {
+				console.error(err);
+			});
 	}
-	  
 
 	return (
 		<>
@@ -32,7 +48,9 @@ export default function Index() {
 					</h1>
 					<h2 className="lg:hidden">Enjoy simple chess network while being able to play anonymously without creating an account.</h2>
 
-					<Button variant="contained" color="primary" startIcon={<SportsEsports />} href="/play">
+					<Button variant="contained" color="primary" startIcon={<SportsEsports />} onClick={() => {
+						createGame('random');
+					}}>
 						Play now
 					</Button>
 				</div>
