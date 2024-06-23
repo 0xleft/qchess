@@ -9,6 +9,7 @@ export default function Document(props) {
 			<Html lang="en">
 				<Head>
 					<DocumentHeadTags {...props} />
+					<meta name="description" content="A free chess platform that allows you to play chess with your friends." />
 				</Head>
 				<body>
 					<Main />
