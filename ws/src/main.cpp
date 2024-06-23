@@ -144,7 +144,7 @@ int main() {
 
 			for (int i = games.size() - 1; i >= 0; i--) {
 				ws::Game* game = games[i];
-				if (!game->isPrivate() && (game->getGameState() == ws::GameState::WAITING && !(game->hasWhiteJoinedGame() && game->hasBlackJoinedGame()))) {
+				if (!game->isPrivate() && (game->getGameState() == ws::GameState::WAITING && game->getNumPlayers() > 0 && !(game->hasWhiteJoinedGame() && game->hasBlackJoinedGame()))) {
 					skip--;
 					if (skip >= 0) {
 						continue;

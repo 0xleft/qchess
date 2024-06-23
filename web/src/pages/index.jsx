@@ -11,36 +11,13 @@ export default function Index() {
 	const [boardState, setBoardState] = useState(new Chess());
 
 	function createGame(color) {
-		fetch(`/api/ws/public`)
-			.then(res => res.json())
-			.then(data => {
-				if (data) {
-					let found = false;
-					Object.values(data || {}).map(i => JSON.parse(i)).forEach(game => {
-						if (game.whiteId === null && color === Color.WHITE || game.blackId === null && color === Color.BLACK) {
-							return;
-						}
-						
-						found = true;
-						router.push(`/play/${game.id}/${game[color === 'w' ? 'whiteId' : 'blackId']}?otherId=${game[color === 'w' ? 'blackId' : 'whiteId']}`);
-						return;
-					});
-
-					if (found) {
-						return;
-					}
-				}
-
-				fetch(`/api/ws/create?private=${false}&random=${color === "random"}&time=${300}&increment=${0}`)
-				.then(res => res.json())
-				.then(data => {
-					router.push(`/play/${data.id}/${data[color === 'w' ? 'whiteId' : 'blackId']}?otherId=${data[color === 'w' ? 'blackId' : 'whiteId']}`);
-				}).catch(err => {
-					console.error(err);
-				});
-			}).catch(err => {
-				console.error(err);
-			});
+		fetch(`/api/ws/create?private=${false}&random=${color === "random"}&time=${300}&increment=${0}`)
+		.then(res => res.json())
+		.then(data => {
+			router.push(`/play/${data.id}/${data[color === 'w' ? 'whiteId' : 'blackId']}?otherId=${data[color === 'w' ? 'blackId' : 'whiteId']}`);
+		}).catch(err => {
+			console.error(err);
+		});
 	}
 
 	return (
