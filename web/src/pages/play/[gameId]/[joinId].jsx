@@ -147,14 +147,11 @@ export default function PlayID() {
         <>
             <title>QChess - Playing</title>
 
-            {/* popup in middle */}
             {
                 popup && (
-                    <Paper className='fixed top-1/4 md:top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-4 rounded-lg shadow-lg min-w-64 flex flex-col'>
+                    <Paper className='fixed top-1/2 md:top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-4 rounded-lg shadow-lg min-w-64 flex flex-col'>
                         <h1 className='text-4xl text-center'>{winner === 'draw' ? 'Draw' : `${winner} wins!`}</h1>
-                        <Button onClick={() => {
-                            // todo
-                        }} className='w-full mt-4' variant="contained">Rematch</Button>
+                        <Button href='/play' className='w-full mt-4' variant="contained">Play again</Button>
                     </Paper>
                 )
             }
